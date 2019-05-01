@@ -1,6 +1,12 @@
 <template>
   <div id="app">
     <router-view />
+    <van-tabbar v-model="active">
+      <van-tabbar-item icon="orders-o">出差</van-tabbar-item>
+      <van-tabbar-item icon="sign" info="2">审批</van-tabbar-item>
+      <van-tabbar-item icon="friends-o">部门</van-tabbar-item>
+      <van-tabbar-item icon="user-o">我</van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 
@@ -8,6 +14,7 @@
   export default {
     data() {
       return {
+        active: 0
       }
     },
   }
