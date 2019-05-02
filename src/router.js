@@ -13,36 +13,18 @@ const router =  new Router({
       name: 'home',
       component: Home,
       meta: {
+        title: '出差申请',
         isAuth: true,
       }
     }
   ]
 })
 
-// router.beforeEach((to, from, next) => {
-//   if (to.matched.some(record => record.meta.isAuth)) {
-//     let expire = Number(localStorage.getItem('expire')) ||0;
-//     let isSignin = false;
-//     let user = localStorage.getItem('user');
-//     if( user && expire > Date.now()) {
-//       isSignin = true;
-//     }
-
-//     if (!isSignin) {
-//       store.commit('setSignin', false);
-//       store.commit('setUser', null);
-//       next({
-//         path: '/signin',
-//         query: {
-//           redirect: to.fullPath
-//         }
-//       })
-//     } else {
-//       next()
-//     }
-//   } else {
-//     next()
-//   }
-// })
+router.beforeEach((to, from, next) => {
+  if(to.meta.title) {
+    document.title = to.meta.title;
+  }
+  next()
+})
 
 export default router;

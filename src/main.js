@@ -13,6 +13,7 @@ Vue.config.productionTip = false;
 Vue.prototype.GLOBAL = global;
 Vue.prototype.$http = axios;
 
+
 let localToken = localStorage.getItem('token');
 
 if (!localToken) {
@@ -55,7 +56,6 @@ axios.get(`/ec/api/auth/login2`).then(async res => {
     store.commit('setUser', user)
   }
 })
-
 axios.interceptors.request.use(config => {
   config.headers.Authorization = localToken;
   return config;
