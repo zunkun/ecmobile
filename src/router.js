@@ -16,6 +16,15 @@ const router =  new Router({
         title: '出差申请',
         isAuth: true,
       }
+    },
+    {
+      path: '/me',
+      name: 'me',
+      component: () => import('./views/Me.vue'),
+      meta: {
+        title: '我的出差',
+        isAuth: true
+      }
     }
   ]
 })

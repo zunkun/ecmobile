@@ -117,26 +117,7 @@
         deptSelectShow: false,
         departmentLists: [],
         departments: [],
-        trip: {
-          deptId: null,
-          deptName: null,
-          trip: {
-            day: 1,
-            title: '',
-            cause: ''
-          },
-          itineraries: [{
-            tripWay: 1,
-            trafficType: 0,
-            depCity: '上海',
-            depCityCode: '',
-            arrCity: '上海',
-            arrCityCode: '',
-            depDate: null,
-            arrDate: null
-          }],
-          cotravelers: []
-        },
+        trip: {},
         defaultArea: {
           0: '421000',
           1: '401000',
@@ -179,7 +160,28 @@
       }
     },
     methods: {
-      back() {},
+      initTrip(){
+        this.trip =  {
+          deptId: null,
+          deptName: null,
+          trip: {
+            day: 1,
+            title: '',
+            cause: ''
+          },
+          itineraries: [{
+            tripWay: 1,
+            trafficType: 0,
+            depCity: '上海',
+            depCityCode: '',
+            arrCity: '上海',
+            arrCityCode: '',
+            depDate: null,
+            arrDate: null
+          }],
+          cotravelers: []
+        }
+      },
       showSelectDept() {
         if (this.departments.length <= 1) {
           return;
@@ -320,6 +322,7 @@
         this.$http.post('/api/approvals/append', this.trip).then(res => {
           if(res.data.errcode === 0) {
             this.$toast('已提交追加部门预算申请');
+            this.initTrip();
             return;
           }
           this.$toast('追加部门预算申请失败，请联系管理员');
@@ -373,6 +376,7 @@
             
             if(approvalRes.errcode ===0) {
               this.$toast('出差申请单填写成功，请等待领导审批');
+              this.initTrip();
               return;
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
@@ -393,7 +397,9 @@
         this.trip.deptName = departments[0].deptName;
       }
 
+      this.initTrip();
       this.getAreaLists();
+
     }
   }
 </script>
