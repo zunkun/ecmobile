@@ -68,7 +68,7 @@ export default {
       if(!this.approval.approvalId) {
         return;
       }
-      let currentIndex = 1;
+
       for(let item of approvalDepts) {
         let approvalUser = {
           users: '',

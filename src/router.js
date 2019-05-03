@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
-// import store from './store';
+import store from './store';
+import axios from 'axios'
 
 Vue.use(Router)
 
@@ -36,6 +37,15 @@ const router =  new Router({
       }
     },
     {
+      path: '/approvals',
+      name: 'approvals',
+      component: () => import('./views/Approvals.vue'),
+      meta: {
+        title: '出差审批',
+        isAuth: true
+      }
+    },
+    {
       path: '/approval',
       name: 'approval',
       component: () => import('./views/Approval.vue'),
@@ -47,9 +57,30 @@ const router =  new Router({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  
   if(to.meta.title) {
     document.title = to.meta.title;
+  }
+
+  if (to.matched.some(record => record.meta.isAuth)) {
+    let token = store.state.token || localStorage.getItem('token');
+    if(!token) {
+      if(to.query.userId) {
+        let res = await axios.get(`/ec/api/auth/login?userId=${to.query.userId}`)
+        let resData = res.data;
+        if (resData.errcode === 0) {
+          let user = resData.data.user;
+          let token = resData.data.token;
+  
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', token);
+  
+          store.commit('setUser', user);
+          window.location.reload()
+        }
+      }
+    }
   }
   next()
 })

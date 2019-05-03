@@ -41,28 +41,14 @@ if (!localToken) {
       }
     });
   });
+} else {
+  axios.interceptors.request.use(config => {
+    config.headers.Authorization = localStorage.getItem('token');
+    return config;
+  }, err => {
+    return Promise.reject(err);
+  });
 }
-
-
-axios.get(`/ec/api/auth/login2`).then(async res => {
-  let resData = res.data;
-  if (resData.errcode === 0) {
-    let user = resData.data.user;
-    let token = resData.data.token;
-
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('token', token);
-
-    store.commit('setUser', user)
-  }
-})
-axios.interceptors.request.use(config => {
-  config.headers.Authorization = localToken;
-  return config;
-}, err => {
-  return Promise.reject(err);
-});
-
 
 new Vue({
   router,

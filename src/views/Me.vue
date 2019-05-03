@@ -13,6 +13,11 @@
         <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'apply', query: {id: approval.approvalId}}">详细</van-button>
       </div>
     </van-panel>
+    <van-panel v-if="!count" title="我的出差审批单">
+      <div class="a-z">
+        当前没有出差审批单
+      </div>
+    </van-panel>
   </div>
 </template>
 
@@ -122,6 +127,11 @@ export default {
   margin: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.a-z {
+  padding: 10px 15px;
+  font-size: 20px;
 }
 </style>
 

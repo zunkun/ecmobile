@@ -381,7 +381,7 @@
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
           })
-        }).catch(res => {
+        }).catch(() => {
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
         })
       }
@@ -397,9 +397,7 @@
         this.trip.deptId = departments[0].deptId;
         this.trip.deptName = departments[0].deptName;
       }
-
       this.getAreaLists();
-
     }
   }
 </script>
