@@ -34,6 +34,15 @@ const router =  new Router({
         title: '申请单明细',
         isAuth: true
       }
+    },
+    {
+      path: '/approval',
+      name: 'approval',
+      component: () => import('./views/Approval.vue'),
+      meta: {
+        title: '出差审批',
+        isAuth: true
+      }
     }
   ]
 })

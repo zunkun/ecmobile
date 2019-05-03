@@ -10,7 +10,6 @@
     </van-panel>
     <van-panel title="出差申请" desc="出差基本信息">
       <van-field v-model="trip.trip.title" type="text" label="出差简介" placeholder="如“杭州出差”" required />
-      <van-field v-model="trip.trip.day" type="number" label="出差天数" placeholder="出差天数" required />
       <van-field v-model="trip.trip.cause" type="textarea" label="出差事由" placeholder="如“部门业务需要，去杭州出差”" required />
     </van-panel>
     <van-panel v-for="(itinerary, $index) in trip.itineraries" :key="'itinerary-' + $index">
@@ -177,6 +176,11 @@
           }],
           cotravelers: []
         }
+
+        if(this.departmentLists.length) {
+          this.trip.deptId = this.departmentLists[0].deptId;
+          this.trip.deptName = this.departmentLists[0].deptName;
+        }
       },
       showSelectDept() {
         if (this.departments.length <= 1) {
@@ -331,7 +335,7 @@
         if(!trip.deptId) {
           flag = false;
         }
-        if(!trip.trip.day || !trip.trip.title || !trip.trip.cause) {
+        if( !trip.trip.title || !trip.trip.cause) {
           flag = false;
         }
         let itineraries = trip.itineraries || []
@@ -372,7 +376,7 @@
             
             if(approvalRes.errcode ===0) {
               this.$toast('出差申请单填写成功，请等待领导审批');
-              this.initTrip();
+              // this.initTrip();
               return;
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
@@ -383,6 +387,7 @@
       }
     },
     created() {
+      this.initTrip();
       if (this.$store.state.user) {
         let departments = this.$store.state.user.departments || [];
         for (let department of departments) {
@@ -393,7 +398,6 @@
         this.trip.deptName = departments[0].deptName;
       }
 
-      this.initTrip();
       this.getAreaLists();
 
     }

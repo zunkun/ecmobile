@@ -3,10 +3,10 @@
     <ApprovalDetail :approval="approval" />
     <div class="button-area" v-if="approval.approvalId">
       <van-row gutter="20">
-        <van-col span="12" v-if="[20, 60,70].indexOf(approval.status) === -1">
+        <van-col span="12" v-if="[10, 20].indexOf(approval.status) > -1">
           <van-button block type="danger" plain @click="cancelApproval" >取消</van-button>
         </van-col>
-        <van-col span="12" v-if="[10, 30].indexOf(approval.status) > -1">
+        <van-col span="12" v-if="[10, 20].indexOf(approval.status) > -1">
           <van-button block type="primary" plain>编辑</van-button>
         </van-col>
       </van-row>

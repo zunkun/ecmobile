@@ -10,7 +10,6 @@
         <p>申请时间: {{parseDate(approval.createTime)}}</p>
       </div>
       <div slot="footer" class="approval-footer">
-        <van-button size="small" type="warning" plain class="footer-btn">取消</van-button>
         <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'apply', query: {id: approval.approvalId}}">详细</van-button>
       </div>
     </van-panel>
@@ -29,12 +28,11 @@ export default {
 
       approvalStatus: {
         10: '申请中',
-        20: '已取消',
-        30: '申请费用',
-        40: '审核中',
+        20: '审核中',
+        30: '审批通过',
+        40: '进入商旅',
         50: '拒绝',
-        60: '通过',
-        70: '进入商旅'
+        60: '取消',
       }
     }
   },
