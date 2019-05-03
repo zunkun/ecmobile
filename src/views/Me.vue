@@ -45,7 +45,7 @@ export default {
       if(this.count && this.approvals.length >= this.count) {
         return;
       }
-      this.$http.get(`/api/approvals/lists/basic?page=${this.page}&limit=${this.limit}`).then(res => {
+      this.$http.get(`/api/approvals/lists/basic?page=${this.page++}&limit=${this.limit}`).then(res => {
         let data = res.data;
         if(data.errcode === 0) {
           let approvalData = data.data;
@@ -55,12 +55,52 @@ export default {
       }).catch(() =>{
         this.$toast(`获取申请单列表失败`);
       })
-    }
+    },
+
+    lowEnough() {
+      let mainWindow = document.getElementById('me');
+      let pageHeight = Math.max(mainWindow.scrollHeight, document.body.offsetHeight);
+      let viewportHeight = window.innerHeight ||
+        document.documentElement.clientHeight ||
+        mainWindow.clientHeight || 0;
+      let scrollHeight = window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        mainWindow.scrollTop || 0;
+      // 通过 真实内容高度 - 视窗高度 - 上面隐藏的高度 < 20，作为加载的触发条件
+      return pageHeight - viewportHeight - scrollHeight < 60;
+    },
+
+    watchScroll(wait, mustTime) {
+      let that = this;
+      if (!this.startTime) {
+        this.startTime = Date.now();
+      }
+      let currentTime = Date.now();
+
+      return function () {
+        if ((currentTime - this.startTime) >= mustTime) {
+          this.startTime = currentTime;
+          clearTimeout(this.timeout)
+          if (that.lowEnough()) {
+            that.getApprovals();
+          }
+        } else {
+          clearTimeout(this.timeout)
+          this.timeout = setTimeout(function () {
+            this.startTime = Date.now();
+            if (that.lowEnough()) {
+             that.getApprovals();
+            }
+          }, wait)
+        }
+      }
+    },
 
   },
 
   created() {
-    this.getApprovals()
+    this.getApprovals();
+    window.addEventListener('scroll', this.watchScroll(200, 3000), true)
   }
 }
 </script>

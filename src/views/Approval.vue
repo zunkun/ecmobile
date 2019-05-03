@@ -49,11 +49,11 @@ export default {
         return this.$http.post(`/api/approvals/${this.approval.approvalId}/reject`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
-            this.$toast('拒绝该申请单成功');
+            this.$toast('拒绝成功');
             this.getApproval()
             return;
           }
-          this.$toast('拒绝该申请单失败');
+          this.$toast.fail('拒绝失败');
         });
       }).catch(() => {
       })
