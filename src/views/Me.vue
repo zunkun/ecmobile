@@ -11,7 +11,7 @@
       </div>
       <div slot="footer" class="approval-footer">
         <van-button size="small" type="warning" plain class="footer-btn">取消</van-button>
-        <van-button size="small" type="primary" plain class="footer-btn">详细</van-button>
+        <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'apply', query: {id: approval.approvalId}}">详细</van-button>
       </div>
     </van-panel>
   </div>
@@ -47,7 +47,7 @@ export default {
       if(this.count && this.approvals.length >= this.count) {
         return;
       }
-      this.$http.get(`/api/approvals/basic?page=${this.page}&limit=${this.limit}`).then(res => {
+      this.$http.get(`/api/approvals/lists/basic?page=${this.page}&limit=${this.limit}`).then(res => {
         let data = res.data;
         if(data.errcode === 0) {
           let approvalData = data.data;

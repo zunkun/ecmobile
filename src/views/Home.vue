@@ -1,9 +1,5 @@
 <template>
   <div id="home">
-    <!-- <van-nav-bar
-      title="出差申请"
-      @click-left="back"
-    /> -->
     <van-panel title="员工信息">
       <van-cell-group>
         <van-cell title="姓名" :value="$store.state.user.userName" />
