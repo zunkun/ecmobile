@@ -22,8 +22,7 @@ if (!localToken) {
     dd.runtime.permission.requestAuthCode({
       corpId: global.corpId,
       onSuccess: function (result) {
-        alert(JSON.stringify(result))
-        axios.get(`/ec/api/auth/login?corpId=${global.corpId}&code=${result.code}`).then(async res => {
+        axios.get(`/api/auth/login?corpId=${global.corpId}&code=${result.code}`).then(async res => {
           let resData = res.data;
           if (resData.errcode === 0) {
             let user = resData.data.user;

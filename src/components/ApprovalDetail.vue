@@ -5,6 +5,9 @@
       <van-step v-for="(approvalUser, $approvalUserIndex) in approvalUsers" :key="'approvalUser-' + $approvalUserIndex">{{approvalUser.users}}</van-step>
       <van-step>商旅</van-step>
     </van-steps>
+    <div style="padding:10px 15px; color:red;">
+      当前状态: {{approvalStatus[approval.status]}}
+    </div>
     <van-panel title="员工信息">
       <van-cell-group>
         <van-cell title="姓名" :value="approval.userName" />
@@ -39,6 +42,14 @@ export default {
   props: ['approval'],
   data() {
     return {
+      approvalStatus: {
+        10: '待审批',
+        20: '审批中',
+        30: '审批通过',
+        40: '进入商旅',
+        50: '已拒绝',
+        60: '员工取消',
+      },
       approvalStep: 0,
       tripWayMap: {
         0: '单程',
@@ -61,15 +72,12 @@ export default {
       date = new Date(date);
       return `${date.getFullYear()}年${date.getMonth() +1}月${date.getDate()}日${date.getHours()}时${date.getMinutes()}分`
     },
-  },
-  watch: {
-    approval() {
-      let approvalDepts = this.approval.approvalDepts || [];
-      if(!this.approval.approvalId) {
+    getApprpvalUsers(approval) {
+      if(!approval.approvalId) {
         return;
       }
 
-      for(let item of approvalDepts) {
+      for(let item of approval.approvalDepts) {
         let approvalUser = {
           users: '',
           approval: item.approval || false
@@ -85,10 +93,13 @@ export default {
         }
         this.approvalUsers.push(approvalUser)
       }
-      if(this.approval.status == 40) {
-        this.approvalStep = this.approval.approvalDepts.length + 2;
+      if(approval.status == 40) {
+        this.approvalStep = approval.approvalDepts.length + 2;
       }
     }
+  },
+  created() {
+    this.getApprpvalUsers(this.approval)
   }
 }
 </script>

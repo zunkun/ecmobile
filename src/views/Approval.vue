@@ -1,7 +1,7 @@
 <template>
-  <div id="approval">
+  <div id="approval" v-if="approval.approvalId">
     <ApprovalDetail :approval="approval" />
-    <div class="button-area" v-if="approval.approvalId">
+    <div class="button-area">
       <van-row gutter="20">
         <van-col span="12" v-if="approval.status === 20">
           <van-button block type="danger" plain @click="rejectApproval" >拒绝</van-button>
@@ -28,7 +28,7 @@ export default {
   },
   methods: {
     getApproval() {
-      this.$http.get(`/api/approvals/${this.approvalId}`).then(res => {
+      this.$http.get(`/api/approvals/${this.approvalId}/detail`).then(res => {
         let data = res.data;
         if (data.errcode !== 0) {
           this.$toast(data.errmsg)

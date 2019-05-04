@@ -1,51 +1,23 @@
 <template>
   <div id="me">
-    <van-panel 
-      :title="approval.trip.title" 
-      :desc="approval.trip.cause" 
-      :status="approvalStatus[approval.status]" 
-      class="approval-panel" 
-      v-for="(approval, $index) in approvals" :key="'approval-'+$index">
-      <div class="approval-content">
-        <p>申请时间: {{parseDate(approval.createTime)}}</p>
-      </div>
-      <div slot="footer" class="approval-footer">
-        <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'apply', query: {id: approval.approvalId}}">详细</van-button>
-      </div>
-    </van-panel>
-    <van-panel v-if="!count" title="我的出差审批单">
-      <div class="a-z">
-        当前没有出差审批单
-      </div>
-    </van-panel>
+    <ApplyBasic :approvals="approvals" :count="count" />
   </div>
 </template>
 
 <script>
+import ApplyBasic from '../components/ApplyBasic'
 export default {
   name: 'Me',
+  components: { ApplyBasic },
   data() {
     return {
       page: 1,
       limit: 10,
       count: 0,
       approvals: [],
-
-      approvalStatus: {
-        10: '申请中',
-        20: '审核中',
-        30: '审批通过',
-        40: '进入商旅',
-        50: '拒绝',
-        60: '取消',
-      }
     }
   },
   methods: {
-    parseDate(date) {
-      date = new Date(date)
-      return `${date.getFullYear()}年${date.getMonth() +1}月${date.getDate()}日`
-    },
     getApprovals() {
       if(this.count && this.approvals.length >= this.count) {
         return;
@@ -64,6 +36,7 @@ export default {
 
     lowEnough() {
       let mainWindow = document.getElementById('me');
+      if(!mainWindow) return;
       let pageHeight = Math.max(mainWindow.scrollHeight, document.body.offsetHeight);
       let viewportHeight = window.innerHeight ||
         document.documentElement.clientHeight ||
@@ -75,7 +48,7 @@ export default {
       return pageHeight - viewportHeight - scrollHeight < 60;
     },
 
-    watchScroll(wait, mustTime) {
+    watchApplyScroll(event, wait=200, mustTime=3000) {
       let that = this;
       if (!this.startTime) {
         this.startTime = Date.now();
@@ -105,34 +78,9 @@ export default {
 
   created() {
     this.getApprovals();
-    window.addEventListener('scroll', this.watchScroll(200, 3000), true)
+    window.addEventListener('scroll', this.watchApplyScroll(), true)
   }
 }
 </script>
-
-<style>
-.approval-footer {
-  text-align:right;
-}
-
-.footer-btn {
-  margin-left:10px;
-}
-
-.approval-content {
-  padding-left: 15px;
-}
-
-.approval-panel {
-  margin: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.a-z {
-  padding: 10px 15px;
-  font-size: 20px;
-}
-</style>
 
 
