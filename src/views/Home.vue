@@ -4,15 +4,15 @@
       <van-cell-group>
         <van-cell title="姓名" :value="$store.state.user.userName" />
         <van-cell title="部门" @click="showSelectDept">
-          {{trip.deptName}}
+          {{approval.deptName}}
         </van-cell>
       </van-cell-group>
     </van-panel>
     <van-panel title="出差申请" desc="出差基本信息">
-      <van-field v-model="trip.trip.title" type="text" label="出差简介" placeholder="如“杭州出差”" required />
-      <van-field v-model="trip.trip.cause" type="textarea" label="出差事由" placeholder="如“部门业务需要，去杭州出差”" required />
+      <van-field v-model="approval.trip.title" type="text" label="出差简介" placeholder="如“杭州出差”" required />
+      <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="如“部门业务需要，去杭州出差”" required />
     </van-panel>
-    <van-panel v-for="(itinerary, $index) in trip.itineraries" :key="'itinerary-' + $index">
+    <van-panel v-for="(itinerary, $index) in approval.itineraries" :key="'itinerary-' + $index">
       <div slot="header" class="panel-head">
         <van-row>
           <van-col span="22" class="title">
@@ -31,12 +31,12 @@
       </van-cell>
 
       <van-cell title="出发城市" required @click="showCity($index, 'depCity')">
-        {{trip.itineraries[$index].depCity}}
+        {{approval.itineraries[$index].depCity}}
       </van-cell>
 
 
       <van-cell title="目的城市" required @click="showCity($index, 'arrCity')">
-        {{trip.itineraries[$index].arrCity}}
+        {{approval.itineraries[$index].arrCity}}
       </van-cell>
 
       <van-cell title="出发日期" required @click="showDatePicker($index, 'depDate')">
@@ -54,7 +54,7 @@
 
     <van-panel title="同行人员" class="traveler-head">
       <van-cell-group>
-        <van-row v-for="(cotraveler, $index) in trip.cotravelers" :key="'cotraveler-' + $index" class="traveler-row">
+        <van-row v-for="(cotraveler, $index) in approval.cotravelers" :key="'cotraveler-' + $index" class="traveler-row">
           <van-col span="22">
             <van-cell title="姓名" :value="cotraveler.userName" @click="selectTraveler($index)">
             </van-cell>
@@ -71,7 +71,7 @@
 
     </van-panel>
     <div class="button-area">
-      <van-button block type="primary" plain @click="saveTrip">申请出差</van-button>
+      <van-button block type="primary" plain @click="saveApproval">申请出差</van-button>
     </div>
 
     <van-popup v-model="deptSelectShow" position="bottom">
@@ -112,7 +112,7 @@
         deptSelectShow: false,
         departmentLists: [],
         departments: [],
-        trip: {},
+        approval: {},
         defaultArea: {
           0: '421000',
           1: '401000',
@@ -155,8 +155,8 @@
       }
     },
     methods: {
-      initTrip(){
-        this.trip =  {
+      initApproval(){
+        this.approval =  {
           deptId: null,
           deptName: null,
           trip: {
@@ -178,8 +178,8 @@
         }
 
         if(this.departmentLists.length) {
-          this.trip.deptId = this.departmentLists[0].deptId;
-          this.trip.deptName = this.departmentLists[0].deptName;
+          this.approval.deptId = this.departmentLists[0].deptId;
+          this.approval.deptName = this.departmentLists[0].deptName;
         }
       },
       showSelectDept() {
@@ -189,20 +189,20 @@
         this.deptSelectShow = true;
       },
       selectDept(deptName, index) {
-        this.trip.deptId = this.departmentLists[index].deptId;
-        this.trip.deptName = this.departmentLists[index].deptName;
+        this.approval.deptId = this.departmentLists[index].deptId;
+        this.approval.deptName = this.departmentLists[index].deptName;
 
         this.deptSelectShow = false;
       },
 
       showSelectTripWay(index) {
         this.itineraryIndex = index || 0;
-        this.tripWaySelectShow = true;
+        this.approvalWaySelectShow = true;
       },
 
       selectTripWay(tripWayName, index) {
-        this.trip.itineraries[this.itineraryIndex].tripWay = index;
-        this.tripWaySelectShow = false;
+        this.approval.itineraries[this.itineraryIndex].tripWay = index;
+        this.approvalWaySelectShow = false;
       },
 
       showSelectTraffic(index) {
@@ -211,13 +211,13 @@
       },
 
       selectTraffic(trafficName, index) {
-        this.trip.itineraries[this.itineraryIndex].trafficType = index;
+        this.approval.itineraries[this.itineraryIndex].trafficType = index;
         this.trafficShow = false;
 
         this.trafficType = index;
 
-        this.trip.itineraries[this.itineraryIndex].depCity = '';
-        this.trip.itineraries[this.itineraryIndex].arrCity = '';
+        this.approval.itineraries[this.itineraryIndex].depCity = '';
+        this.approval.itineraries[this.itineraryIndex].arrCity = '';
         this.getAreaLists();
       },
 
@@ -239,8 +239,8 @@
 
 
       pickCity(area) {
-        this.trip.itineraries[this.itineraryIndex][this.areaPickType] = area[1].name;
-        this.trip.itineraries[this.itineraryIndex][`${this.areaPickType}Code`] = area[1].code;
+        this.approval.itineraries[this.itineraryIndex][this.areaPickType] = area[1].name;
+        this.approval.itineraries[this.itineraryIndex][`${this.areaPickType}Code`] = area[1].code;
 
         this.areaShow = false;
       },
@@ -253,7 +253,7 @@
 
       pickDate() {
         let date = new Date(this.timeSelected);
-        this.trip.itineraries[this.itineraryIndex][this.datePickType] = date;
+        this.approval.itineraries[this.itineraryIndex][this.datePickType] = date;
 
         this.datePickerShow = false;
       },
@@ -266,7 +266,7 @@
       },
 
       addItinerary() {
-        this.trip.itineraries.push({
+        this.approval.itineraries.push({
           tripWay: 1,
           trafficType: 0,
           depCity: '上海',
@@ -279,11 +279,11 @@
       },
 
       deleteItinerary(index) {
-        this.$delete(this.trip.itineraries, index)
+        this.$delete(this.approval.itineraries, index)
       },
 
       addCotraveler() {
-        this.trip.cotravelers.push({
+        this.approval.cotravelers.push({
           userId: '',
           userName: '',
           deptId: '',
@@ -292,7 +292,7 @@
       },
 
       deleteTraveler(index) {
-        this.$delete(this.trip.cotravelers, index)
+        this.$delete(this.approval.cotravelers, index)
       },
 
       async selectTraveler(index) {
@@ -313,32 +313,32 @@
       },
 
       pickTraveler(staff) {
-        this.trip.cotravelers[this.travelerIndex] = staff;
+        this.approval.cotravelers[this.travelerIndex] = staff;
 
         this.travelerShow = false;
       },
 
       appendBudget() {
-        this.$http.post('/ec/api/approvals/append', this.trip).then(res => {
+        this.$http.post('/ec/api/approvals/append', this.approval).then(res => {
           if(res.data.errcode === 0) {
             this.$toast('已提交追加部门预算申请');
-            this.initTrip();
+            this.initApproval();
             return;
           }
           this.$toast('追加部门预算申请失败，请联系管理员');
         })
       },
 
-      saveTrip() {
+      saveApproval() {
         let flag = true;
-        let trip = this.trip;
-        if(!trip.deptId) {
+        let approval = this.approval;
+        if(!approval.deptId) {
           flag = false;
         }
-        if( !trip.trip.title || !trip.trip.cause) {
+        if( !approval.trip.title || !approval.trip.cause) {
           flag = false;
         }
-        let itineraries = trip.itineraries || []
+        let itineraries = approval.itineraries || []
         for(let it of itineraries) {
           if(!it.tripWay || !it.depCity || !it.arrCity || !it.depDate || !it.arrDate) {
             flag = false;
@@ -353,14 +353,14 @@
           return;
         }
 
-        this.$http.get(`/ec/api/fees/balance?deptId=${trip.deptId}`).then((res) =>{
+        this.$http.get(`/ec/api/fees/balance?deptId=${approval.deptId}`).then((res) =>{
           let feeRes = res.data;
           if(feeRes.errcode !== 0) {
             this.$toast(`申请失败,${feeRes.errmsg}`)
             return;
           }
-          let approval = feeRes.data.approval;
-          if(!approval) {
+          let currentApproval = feeRes.data.approval;
+          if(!currentApproval) {
             this.$dialog.confirm({
               message: '部门预算不足，是否申请追加预算',
             }).then(() => {
@@ -371,12 +371,12 @@
             return;
           }
 
-          this.$http.post('/ec/api/approvals',trip).then(res => {
+          this.$http.post('/ec/api/approvals',approval).then(res => {
             let approvalRes = res.data;
             
             if(approvalRes.errcode ===0) {
               this.$toast('出差申请单填写成功，请等待领导审批');
-              // this.initTrip();
+              this.initApproval();
               return;
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
@@ -387,15 +387,15 @@
       }
     },
     created() {
-      this.initTrip();
+      this.initApproval();
       if (this.$store.state.user) {
         let departments = this.$store.state.user.departments || [];
         for (let department of departments) {
           this.departments.push(department.deptName)
         }
         this.departmentLists = departments;
-        this.trip.deptId = departments[0].deptId;
-        this.trip.deptName = departments[0].deptName;
+        this.approval.deptId = departments[0].deptId;
+        this.approval.deptName = departments[0].deptName;
       }
       this.getAreaLists();
     }
