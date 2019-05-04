@@ -53,6 +53,15 @@ const router =  new Router({
         title: '出差审批',
         isAuth: true
       }
+    },
+    {
+      path: '/approvaledit',
+      name: 'approvaledit',
+      component: () => import('./views/ApprovalEdit.vue'),
+      meta: {
+        title: '出差修改',
+        isAuth: true
+      }
     }
   ]
 })

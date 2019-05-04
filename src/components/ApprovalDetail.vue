@@ -1,10 +1,10 @@
 <template>
   <div id="approvaldetail">
-    <van-steps :active="approvalStep" >
+    <!-- <van-steps :active="approvalStep" >
       <van-step>申请</van-step>
       <van-step v-for="(approvalUser, $approvalUserIndex) in approvalUsers" :key="'approvalUser-' + $approvalUserIndex">{{approvalUser.users}}</van-step>
       <van-step>商旅</van-step>
-    </van-steps>
+    </van-steps> -->
     <div style="padding:10px 15px; color:red;">
       当前状态: {{approvalStatus[approval.status]}}
     </div>
@@ -61,7 +61,7 @@ export default {
         2: '汽车',
         3: '其他'
       },
-      approvalUsers: [],
+      // approvalUsers: [],
     }
   },
   methods: {
@@ -98,9 +98,32 @@ export default {
       }
     }
   },
-  created() {
-    this.getApprpvalUsers(this.approval)
-  }
+  // computed:{
+  //   approvalUsers() {
+  //     let approval = this.approval ||{};
+  //     if(!approval.approvalId) return [];
+  //     let approvalUsers = [];
+  //     for(let item of approval.approvalDepts) {
+  //       let approvalUser = {
+  //         users: '',
+  //         approval: item.approval || false
+  //       };
+  //       if(item.approvalTime) {
+  //         this.approvalStep += 1;
+  //       }
+  //       let users = item.users || [];
+  //       if(users.length >= 2) {
+  //         approvalUser.users = `${users[0].userName}、${users[1].userName}`
+  //       } else {
+  //         approvalUser.users = `${users[0].userName}`
+  //       }
+  //       approvalUsers.push(approvalUser)
+  //     }
+  //     this.approvalStep = 1;
+  //     console.log(approvalUsers, this.approvalStep)
+  //     return approvalUsers;
+  //   } 
+  // }
 }
 </script>
 
