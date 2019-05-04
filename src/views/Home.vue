@@ -222,7 +222,7 @@
       },
 
       getAreaLists() {
-        this.$http.get(`/api/area?type=${this.trafficType}`).then(res => {
+        this.$http.get(`/ec/api/area?type=${this.trafficType}`).then(res => {
           let data = res.data;
           if (data.errcode === 0) {
             this.areaList = data.data;
@@ -298,7 +298,7 @@
       async selectTraveler(index) {
         this.travelerIndex = index || 0;
         if (!this.staffLists.length) {
-          let res = await this.$http.get('/api/staffs/depts');
+          let res = await this.$http.get('/ec/api/staffs/depts');
           let resData = res.data;
           if (resData.errcode !== 0) {
             return;
@@ -319,7 +319,7 @@
       },
 
       appendBudget() {
-        this.$http.post('/api/approvals/append', this.trip).then(res => {
+        this.$http.post('/ec/api/approvals/append', this.trip).then(res => {
           if(res.data.errcode === 0) {
             this.$toast('已提交追加部门预算申请');
             this.initTrip();
@@ -353,7 +353,7 @@
           return;
         }
 
-        this.$http.get(`/api/fees/balance?deptId=${trip.deptId}`).then((res) =>{
+        this.$http.get(`/ec/api/fees/balance?deptId=${trip.deptId}`).then((res) =>{
           let feeRes = res.data;
           if(feeRes.errcode !== 0) {
             this.$toast(`申请失败,${feeRes.errmsg}`)
@@ -371,7 +371,7 @@
             return;
           }
 
-          this.$http.post('/api/approvals',trip).then(res => {
+          this.$http.post('/ec/api/approvals',trip).then(res => {
             let approvalRes = res.data;
             
             if(approvalRes.errcode ===0) {

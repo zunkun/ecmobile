@@ -28,7 +28,7 @@ export default {
   },
   methods: {
     getApproval() {
-      this.$http.get(`/api/approvals/${this.approvalId}/detail`).then(res => {
+      this.$http.get(`/ec/api/approvals/${this.approvalId}/detail`).then(res => {
         let data = res.data;
         if (data.errcode !== 0) {
           this.$toast(data.errmsg)
@@ -46,7 +46,7 @@ export default {
         message:'您确定要拒绝该出差申请？',
         showCancelButton: true,
       }).then(() => {
-        return this.$http.post(`/api/approvals/${this.approval.approvalId}/reject`).then((res) =>{
+        return this.$http.post(`/ec/api/approvals/${this.approval.approvalId}/reject`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
             this.$toast('拒绝成功');
@@ -65,7 +65,7 @@ export default {
         message:'您确定要通过该出差申请？',
         showCancelButton: true,
       }).then(() => {
-        return this.$http.post(`/api/approvals/${this.approval.approvalId}/pass`).then((res) =>{
+        return this.$http.post(`/ec/api/approvals/${this.approval.approvalId}/pass`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
             this.$toast('通过该申请单成功');

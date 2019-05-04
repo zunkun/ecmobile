@@ -22,7 +22,7 @@ export default {
       if(this.count && this.approvals.length >= this.count) {
         return;
       }
-      this.$http.get(`/api/approvals/lists/basic?page=${this.page++}&limit=${this.limit}`).then(res => {
+      this.$http.get(`/ec/api/approvals/lists/basic?page=${this.page++}&limit=${this.limit}`).then(res => {
         let data = res.data;
         if(data.errcode === 0) {
           let approvalData = data.data;

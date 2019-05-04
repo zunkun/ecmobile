@@ -4,10 +4,10 @@
     <div class="button-area" v-if="approval.approvalId">
       <van-row gutter="20">
         <van-col span="12" v-if="[10, 20].indexOf(approval.status) > -1">
-          <van-button block type="danger" plain @click="cancelApproval" >取消</van-button>
+          <van-button block type="danger" plain @click="cancelApproval" >撤 销</van-button>
         </van-col>
         <van-col span="12" v-if="[10, 20].indexOf(approval.status) > -1">
-          <van-button block type="primary" plain>编辑</van-button>
+          <van-button block type="primary" plain>修 改</van-button>
         </van-col>
       </van-row>
     </div>
@@ -28,7 +28,7 @@ export default {
   },
   methods: {
     getApproval() {
-      this.$http.get(`/api/approvals/${this.approvalId}`).then(res => {
+      this.$http.get(`/ec/api/approvals/${this.approvalId}`).then(res => {
         let data = res.data;
         if (data.errcode !== 0) {
           this.$toast(data.errmsg)
@@ -42,18 +42,18 @@ export default {
 
     cancelApproval() {
       this.$dialog.confirm({
-        title: '取消申请单',
-        message:'您确定要取消该出差申请？',
+        title: '撤销申请单',
+        message:'您确定要撤销该出差申请？',
         showCancelButton: true,
       }).then(() => {
-        return this.$http.post(`/api/approvals/${this.approval.approvalId}/cancel`).then((res) =>{
+        return this.$http.post(`/ec/api/approvals/${this.approval.approvalId}/cancel`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
-            this.$toast('取消该申请单成功');
+            this.$toast('撤销该申请单成功');
             this.getApproval()
             return;
           }
-          this.$toast('取消该申请单失败');
+          this.$toast('撤销该申请单失败');
         });
       }).catch(() => {
       })

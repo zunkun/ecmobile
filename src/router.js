@@ -67,7 +67,7 @@ router.beforeEach(async (to, from, next) => {
     let token = store.state.token || localStorage.getItem('token');
     if(!token) {
       if(to.query.userId) {
-        let res = await axios.get(`/api/auth/login?userId=${to.query.userId}`)
+        let res = await axios.get(`/ec/api/auth/login?userId=${to.query.userId}`)
         let resData = res.data;
         if (resData.errcode === 0) {
           let user = resData.data.user;

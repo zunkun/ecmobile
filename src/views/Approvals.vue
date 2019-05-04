@@ -46,7 +46,7 @@ export default {
       if(this.approvalLists[type].count && this.approvalLists[type].approvals.length >= this.approvalLists[type].count) {
         return;
       }
-      this.$http.get(`/api/approvals/lists/manage?type=${type}&limit=${this.limit}&page=${this.approvalLists[type].page++}`).then(res =>{
+      this.$http.get(`/ec/api/approvals/lists/manage?type=${type}&limit=${this.limit}&page=${this.approvalLists[type].page++}`).then(res =>{
         let resData = res.data;
         if(resData.errcode === 0) {
           let approvalData = resData.data;

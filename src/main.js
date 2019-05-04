@@ -20,9 +20,10 @@ if (!localToken) {
   dd.ready(function () {
     // dd.ready参数为回调函数，在环境准备就绪时触发，jsapi的调用需要保证在该回调函数触发后调用，否则无效。
     dd.runtime.permission.requestAuthCode({
-      corpId: global.corpId,
+      corpId: global[process.env.NODE_ENV].corpId || 'dingcbcbb63d3edd5478',
       onSuccess: function (result) {
-        axios.get(`/api/auth/login?corpId=${global.corpId}&code=${result.code}`).then(async res => {
+        axios.get(`/ec/api/auth/login?corpId=${global.corpId}&code=${result.code}`)
+          .then(async res => {
           let resData = res.data;
           if (resData.errcode === 0) {
             let user = resData.data.user;
@@ -33,7 +34,7 @@ if (!localToken) {
 
             store.commit('setUser', user)
           }
-        })
+        }).catch(() => {})
       },
       onFail: function () {
         alert('获取用户信息失败')
