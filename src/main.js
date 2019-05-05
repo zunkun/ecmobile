@@ -15,8 +15,9 @@ Vue.prototype.$http = axios;
 
 
 let localToken = localStorage.getItem('token');
+let expire = Number(localStorage.getItem('expire')) || 0;
 
-if (!localToken) {
+if (!localToken || expire < Date.now()) {
   dd.ready(function () {
     // dd.ready参数为回调函数，在环境准备就绪时触发，jsapi的调用需要保证在该回调函数触发后调用，否则无效。
     dd.runtime.permission.requestAuthCode({
@@ -31,6 +32,7 @@ if (!localToken) {
 
             localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('token', token);
+            localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
 
             store.commit('setUser', user)
           }

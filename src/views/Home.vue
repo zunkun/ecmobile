@@ -8,15 +8,14 @@
         </van-cell>
       </van-cell-group>
     </van-panel>
-    <van-panel title="出差申请" desc="出差基本信息">
-      <van-field v-model="approval.trip.title" type="text" label="出差简介" placeholder="如“杭州出差”" required />
-      <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="如“部门业务需要，去杭州出差”" required />
+    <van-panel title="出差申请">
+      <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="请输入出差事由" required />
     </van-panel>
     <van-panel v-for="(itinerary, $index) in approval.itineraries" :key="'itinerary-' + $index">
       <div slot="header" class="panel-head">
         <van-row>
           <van-col span="22" class="title">
-            {{'行程列表 ' + ($index +1)}}
+            {{'行程(' + ($index +1) + ')'}}
           </van-col>
           <van-col span="2" class="handle">
             <van-icon name="delete" color="red" size="20px" @click="deleteItinerary($index)" />
@@ -45,12 +44,23 @@
       <van-cell title="到达日期" required @click="showDatePicker($index, 'arrDate')">
         {{parseDateStr(itinerary.arrDate)}}
       </van-cell>
+      <van-cell title="时长(天)" required label="根据排版情况自动计算时长">
+        {{itinerary.day}}
+      </van-cell>
     </van-panel>
 
     <div class="button-area">
-      <van-button block type="warning" plain @click="addItinerary">新增行程</van-button>
+      <van-button block type="warning" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
     </div>
+    <van-panel>
+      <van-field v-model="approval.trip.day" label="出差天数" required />
+    </van-panel>
+    <van-panel title="出差备注">
+      <van-field v-model="approval.trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
 
+      <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
+      <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
+    </van-panel>
 
     <van-panel title="同行人员" class="traveler-head">
       <van-cell-group>
@@ -65,11 +75,20 @@
         </van-row>
 
         <div class="button-area">
-          <van-button block type="warning" plain @click="addCotraveler">新增同行人员</van-button>
+          <van-button block type="warning" plain @click="addCotraveler"><span class="icon-btn">+</span>增加同行人员</van-button>
         </div>
       </van-cell-group>
 
     </van-panel>
+    <van-panel title="审批流程">
+      <van-steps direction="vertical" >
+        <van-step v-for="(listItem, $index) in approvalLists" :key="'listItem-' + $index">
+          <h3>{{listItem.title}}</h3>
+          <p>{{listItem.users.join('、')}}</p>
+        </van-step>
+      </van-steps>
+    </van-panel>
+
     <div class="button-area">
       <van-button block type="primary" plain @click="saveApproval">申请出差</van-button>
     </div>
@@ -80,16 +99,16 @@
 
     <van-popup v-model="tripWaySelectShow" position="bottom">
       <van-picker :columns="tripWayLists" :default-index="1" :show-toolbar="true" @cancel="tripWaySelectShow=false"
-        @confirm="selectTripWay" />
+        @confirm="selectTripWay" title="行程类别"/>
     </van-popup>
 
     <van-popup v-model="trafficShow" position="bottom">
       <van-picker :columns="trafficLists" :default-index="0" :show-toolbar="true" @cancel="trafficShow=false"
-        @confirm="selectTraffic" />
+        @confirm="selectTraffic" title="交通方式" />
     </van-popup>
 
     <van-popup v-model="datePickerShow" position="bottom">
-      <van-datetime-picker :show-toolbar="true" v-model="timeSelected" type="datetime" @cancel="datePickerShow=false"
+      <van-datetime-picker :show-toolbar="true" v-model="timeSelected" type="date" @cancel="datePickerShow=false"
         @confirm="pickDate" />
     </van-popup>
 
@@ -98,8 +117,15 @@
     </van-popup>
 
     <van-popup v-model="travelerShow" position="center" class="traverer-wrapper">
-      <van-tree-select :items="staffLists" :height="treeHeight" :main-active-index="mainActiveIndex" :active-id="activeId"
-        @navclick="onNavClick" @itemclick="pickTraveler" />
+      <van-tree-select :items="staffLists" title="同行人" :height="treeHeight" :main-active-index="mainActiveIndex" :active-id="activeId" @navclick="onNavClick" @itemclick="pickTraveler" />
+    </van-popup>
+
+    <van-popup v-model="costcenterShow" position="bottom">
+      <van-picker :columns="costcenters" :show-toolbar="true" title="成本中心" @cancel="costcenterShow=false" @confirm="pickCostCenter" />
+    </van-popup>
+
+    <van-popup v-model="invoiceShow" position="bottom">
+      <van-picker :columns="invoices" :show-toolbar="true" @cancel="invoiceShow=false" @confirm="pickInvoice" title="发票抬头"/>
     </van-popup>
   </div>
 </template>
@@ -109,6 +135,7 @@
     name: 'home',
     data() {
       return {
+        apprvalProcess: 0,
         deptSelectShow: false,
         departmentLists: [],
         departments: [],
@@ -152,6 +179,11 @@
         mainActiveIndex: 0,
         activeId: 1,
         staffLists: [],
+        costcenterShow: false,
+        costcenters: [],
+        invoiceShow: false,
+        invoices: [],
+        approvalLists: [],
       }
     },
     methods: {
@@ -162,7 +194,8 @@
           trip: {
             day: 1,
             title: '',
-            cause: ''
+            cause: '',
+            remark: ''
           },
           itineraries: [{
             tripWay: 1,
@@ -172,9 +205,19 @@
             arrCity: '上海',
             arrCityCode: '',
             depDate: null,
-            arrDate: null
+            arrDate: null,
+            day: 1,
           }],
-          cotravelers: []
+          costcenter: {
+            id: '',
+            title: '',
+          },
+          invoice: {
+            id: '',
+            title: '',
+          },
+          cotravelers: [],
+          approvalDepts: [],
         }
 
         if(this.departmentLists.length) {
@@ -191,18 +234,18 @@
       selectDept(deptName, index) {
         this.approval.deptId = this.departmentLists[index].deptId;
         this.approval.deptName = this.departmentLists[index].deptName;
-
         this.deptSelectShow = false;
+        this.getApprovalDepts();
       },
 
       showSelectTripWay(index) {
         this.itineraryIndex = index || 0;
-        this.approvalWaySelectShow = true;
+        this.tripWaySelectShow = true;
       },
 
       selectTripWay(tripWayName, index) {
         this.approval.itineraries[this.itineraryIndex].tripWay = index;
-        this.approvalWaySelectShow = false;
+        this.tripWaySelectShow = false;
       },
 
       showSelectTraffic(index) {
@@ -237,7 +280,6 @@
         this.areaPickType = areaPickType;
       },
 
-
       pickCity(area) {
         this.approval.itineraries[this.itineraryIndex][this.areaPickType] = area[1].name;
         this.approval.itineraries[this.itineraryIndex][`${this.areaPickType}Code`] = area[1].code;
@@ -253,16 +295,34 @@
 
       pickDate() {
         let date = new Date(this.timeSelected);
-        this.approval.itineraries[this.itineraryIndex][this.datePickType] = date;
+        let it = this.approval.itineraries[this.itineraryIndex];
+        it[this.datePickType] = date;
+        if(it.arrDate && (it.arrDate < it.depDate)) {
+          this.$toast('到达日期不得小于出发日期')
+          it.arrDate = it.depDate;
+        }
 
         this.datePickerShow = false;
+
+        it.day = this.parseTripDay(this.itineraryIndex)
+
+        this.computeTripDay()
       },
       parseDateStr(date) {
         if (!date) {
           return '';
         }
         date = new Date(date);
-        return `${date.getFullYear()}年${date.getMonth() +1}月${date.getDate()}日${date.getHours()}时${date.getMinutes()}分`
+        return `${date.getFullYear()}年${date.getMonth() +1}月${date.getDate()}日`
+      },
+
+      parseTripDay(index) {
+        let it = this.approval.itineraries[index]
+        if(!it.depDate || !it.arrDate) {
+          return 1
+        }
+
+        return Math.abs(Math.ceil((it.arrDate.setHours(23) - it.depDate.setHours(0)) / (24 * 60 * 60 * 1000)))
       },
 
       addItinerary() {
@@ -274,12 +334,41 @@
           arrCity: '上海',
           arrCityCode: '',
           depDate: null,
-          arrDate: null
+          arrDate: null,
+          day: 1
         })
       },
 
       deleteItinerary(index) {
-        this.$delete(this.approval.itineraries, index)
+        this.$delete(this.approval.itineraries, index);
+        this.computeTripDay()
+      },
+
+      computeTripDay() {
+        let small = null;
+        let big = null;
+        for(let it of this.approval.itineraries) {
+          if(!small) {
+            small = it.depDate;
+          }
+          if(!big) {
+            big = it.depDate;
+          }
+          if(it.depDate && it.depDate < small) {
+            small = it.depDate;
+          }
+          if(it.arrDate && it.arrDate < small) {
+            small = it.arrDate;
+          }
+
+          if(it.depDate && it.depDate > big) {
+            big = it.depDate;
+          }
+          if(it.arrDate && it.arrDate > big) {
+            big = it.arrDate;
+          }
+        }
+        this.approval.trip.day = Math.abs(Math.ceil((big.setHours(23) - small.setHours(0)) / (24 * 60 * 60 * 1000)))
       },
 
       addCotraveler() {
@@ -335,12 +424,12 @@
         if(!approval.deptId) {
           flag = false;
         }
-        if( !approval.trip.title || !approval.trip.cause) {
+        if(!approval.trip.day || !approval.trip.cause) {
           flag = false;
         }
         let itineraries = approval.itineraries || []
         for(let it of itineraries) {
-          if(!it.tripWay || !it.depCity || !it.arrCity || !it.depDate || !it.arrDate) {
+          if(!it.depCity || !it.arrCity || !it.depDate || !it.arrDate) {
             flag = false;
           }
           if(!flag) {
@@ -384,18 +473,92 @@
         }).catch(() => {
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
         })
+      },
+
+      pickCostCenter(title, index) {
+        let costcenterLists = this.$store.state.user.costcenters;
+        this.approval.costcenter = {
+          id: costcenterLists[index].id,
+          title: costcenterLists[index].title 
+        }
+        this.costcenterShow = false;
+      },
+
+      pickInvoice(title, index) {
+        let invoiceLists = this.$store.state.user.invoices;
+        this.approval.invoice = {
+          id: invoiceLists[index].id,
+          title: invoiceLists[index].title 
+        }
+        this.invoiceShow = false;
+      },
+
+      async getApprovalDepts() {
+        if(!this.approval.deptId) {
+          return;
+        }
+
+        this.$http.get(`/ec/api/depts/approval/${this.approval.deptId}`).then(res => {
+          let resData = res.data;
+          let approvalDepts = [];
+          if(resData.errcode === 0) {
+            approvalDepts = resData.data || []
+          }
+          this.approval.approvalDepts = approvalDepts;
+
+          for(let index in approvalDepts) {
+            let listItem = {
+              title: '',
+              users: []
+            };
+            if((index === '0' || index === 0) && approvalDepts[index].deptId === Number(this.approval.deptId)) {
+              listItem.title = '直接主管';
+            } else {
+              listItem.title = `第${Number(index)+1}级主管` 
+            }
+            let users = approvalDepts[index].users ||[]
+            for(let user of users) {
+              listItem.users.push(user.userName)
+            }
+            this.approvalLists.push(listItem)
+          }
+        }).catch(() => {})
       }
     },
     created() {
       this.initApproval();
       if (this.$store.state.user) {
-        let departments = this.$store.state.user.departments || [];
+        let user = this.$store.state.user
+        let departments = user.departments || [];
         for (let department of departments) {
           this.departments.push(department.deptName)
         }
         this.departmentLists = departments;
         this.approval.deptId = departments[0].deptId;
         this.approval.deptName = departments[0].deptName;
+
+        this.getApprovalDepts()
+
+        if(user.costcenters.length) {
+          this.approval.costcenter = {
+            id: user.costcenters[0].id,
+            title: user.costcenters[0].title
+          }
+        }
+        for(let item of user.costcenters) {
+          this.costcenters.push(item.title);
+        }
+
+        if(user.invoices.length) {
+          this.approval.invoice = {
+            id: user.invoices[0].id,
+            title: user.invoices[0].title
+          }
+        }
+        for(let item of user.invoices) {
+          this.invoices.push(item.title);
+        }
+        
       }
       this.getAreaLists();
     }
@@ -444,5 +607,9 @@
 
   .van-panel__header .van-cell__title {
     color: #1989fa;
+  }
+
+  .icon-btn {
+    font-size: 18px;
   }
 </style>

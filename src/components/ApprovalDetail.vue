@@ -16,7 +16,6 @@
     </van-panel>
     <van-panel title="出差申请" desc="出差基本信息">
       <van-cell-group v-if="approval.trip">
-        <van-cell title="出差简介" :value="approval.trip.title" />
         <van-field v-model="approval.trip.cause" disabled type="textarea" label="出差事由" />
       </van-cell-group>
     </van-panel>

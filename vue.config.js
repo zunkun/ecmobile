@@ -5,14 +5,14 @@ module.exports = {
     port: 4500,
     proxy: {
       '/ec/api': {
-        target: 'http://172.18.1.100:5400/',
+        target: 'http://10.164.8.131:5600/',
         secure: false,
         ws: true,
         changeOrigin: true,
         pathRewrite: {'^/ec/api' : '/api'}
       },
       '/api': {
-        target: 'http://172.18.1.100:5400',
+        target: 'http://10.164.8.131:5600',
         secure: false,
         ws: true,
         changeOrigin: true,

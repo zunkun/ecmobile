@@ -67,6 +67,7 @@ const router =  new Router({
 })
 
 router.beforeEach(async (to, from, next) => {
+  let expire = Number(localStorage.getItem('expire')) ||0;
   
   if(to.meta.title) {
     document.title = to.meta.title;
@@ -74,7 +75,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.matched.some(record => record.meta.isAuth)) {
     let token = store.state.token || localStorage.getItem('token');
-    if(!token) {
+    if(!token || expire < Date.now()) {
       if(to.query.userId) {
         let res = await axios.get(`/ec/api/auth/login?userId=${to.query.userId}`)
         let resData = res.data;
@@ -84,7 +85,8 @@ router.beforeEach(async (to, from, next) => {
   
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('token', token);
-  
+          localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
+
           store.commit('setUser', user);
           window.location.reload()
         }
