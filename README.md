@@ -1,4 +1,4 @@
-# eclient
+# ecmobile
 海尔费控移动端
 
 ## Project setup

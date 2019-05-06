@@ -1,6 +1,6 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/eclient/': './',
-  outputDir: 'eclient',
+  publicPath: process.env.NODE_ENV === 'production' ? '/ecmobile/': './',
+  outputDir: 'ecmobile',
   devServer: {
     port: 4500,
     proxy: {
