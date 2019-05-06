@@ -6,6 +6,9 @@
         <van-cell title="部门" @click="showSelectDept">
           {{approval.deptName}}
         </van-cell>
+        <van-cell title="预算余额">
+          {{approval.balance}}
+        </van-cell>
       </van-cell-group>
     </van-panel>
     <van-panel title="出差申请">
@@ -54,12 +57,11 @@
     </div>
     <van-panel>
       <van-field v-model="approval.trip.day" label="出差天数" required />
+      <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
+      <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
     </van-panel>
     <van-panel title="出差备注">
       <van-field v-model="approval.trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
-
-      <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
-      <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
     </van-panel>
 
     <van-panel title="同行人员" class="traveler-head">
@@ -89,8 +91,11 @@
       </van-steps>
     </van-panel>
 
-    <div class="button-area">
+    <div class="button-area" v-if="approval.balance">
       <van-button block type="primary" plain @click="saveApproval">申请出差</van-button>
+    </div>
+    <div v-else>
+      <p>当前部门没有预算，请联系管理员调整预算再申请出差</p>
     </div>
 
     <van-popup v-model="deptSelectShow" position="bottom">
@@ -135,6 +140,7 @@
     name: 'home',
     data() {
       return {
+        balance: 0,
         apprvalProcess: 0,
         deptSelectShow: false,
         departmentLists: [],
@@ -185,10 +191,22 @@
       }
     },
     methods: {
+      getBalance(deptId) {
+        this.$http.get(`/ec/api/fees/count?deptId=${deptId || this.approval.deptId}`).then((res) =>{
+          let feeRes = res.data;
+          if(feeRes.errcode !== 0) {
+            this.$toast(`获取部门费用预算失败`)
+            return;
+          }
+          this.balance = feeRes.data.balance || 0;
+          this.approval.balance = this.balance || 0;
+        }).catch();
+      },
       initApproval(){
         this.approval =  {
           deptId: null,
           deptName: null,
+          balance: 0,
           trip: {
             day: 1,
             title: '',
@@ -244,6 +262,7 @@
         this.approval.deptName = this.departmentLists[index].deptName;
         this.deptSelectShow = false;
         this.getApprovalDepts();
+        this.getBalance(this.approval.deptId)
       },
 
       showSelectTripWay(index) {
@@ -293,7 +312,7 @@
       pickCity(area) {
         let it = this.approval.itineraries[this.itineraryIndex];
         it[this.areaPickType] = area.text;
-        it[`${this.areaPickType}Code`] = area.id;selectTraffic
+        it[`${this.areaPickType}Code`] = area.id;
         this.areaShow = false;
       },
 
@@ -378,6 +397,10 @@
             big = it.arrDate;
           }
         }
+        if(!big || !small) {
+          this.approval.trip.day = 1;
+          return;
+        }
         this.approval.trip.day = Math.abs(Math.ceil((big.setHours(23) - small.setHours(0)) / (24 * 60 * 60 * 1000)))
       },
 
@@ -457,14 +480,18 @@
           return;
         }
 
-        this.$http.get(`/ec/api/fees/balance?deptId=${approval.deptId}`).then((res) =>{
-          let feeRes = res.data;
-          if(feeRes.errcode !== 0) {
-            this.$toast(`申请失败,${feeRes.errmsg}`)
-            return;
-          }
-          let currentApproval = feeRes.data.approval;
-          if(!currentApproval) {
+        if(!approval.costcenter.id) {
+          this.$toast('申请失败，您没有商旅成本中心');
+          return;
+        }
+
+        if(!approval.invoice.id) {
+          this.$toast('申请失败，您没有商旅发票抬头');
+          return;
+        }
+        
+
+        if(this.approval.balance <= 0) {
             this.$dialog.confirm({
               message: '部门预算不足，是否申请追加预算',
             }).then(() => {
@@ -486,9 +513,6 @@
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
           })
-        }).catch(() => {
-            this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
-        })
       },
 
       pickCostCenter(title, index) {
@@ -575,6 +599,7 @@
           this.invoices.push(item.title);
         }
         
+        this.getBalance()
       }
       this.getAreaLists();
     }
