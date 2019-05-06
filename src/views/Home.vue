@@ -293,7 +293,7 @@
       pickCity(area) {
         let it = this.approval.itineraries[this.itineraryIndex];
         it[this.areaPickType] = area.text;
-        it[`${this.areaPickType}Code`] = area.id;
+        it[`${this.areaPickType}Code`] = area.id;selectTraffic
         this.areaShow = false;
       },
 
@@ -433,6 +433,7 @@
       },
 
       saveApproval() {
+        let that = this;
         let flag = true;
         let approval = this.approval;
         if(!approval.deptId) {
@@ -479,7 +480,8 @@
             
             if(approvalRes.errcode ===0) {
               this.$toast('出差申请单填写成功，请等待领导审批');
-              this.initApproval();
+              that.$router.push({name: 'apply', query: {id: approvalRes.data.approvalId}})
+              // this.initApproval();
               return;
             }
             this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
