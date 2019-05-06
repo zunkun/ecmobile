@@ -7,7 +7,7 @@
           <van-button block type="danger" plain @click="cancelApproval" >撤 销</van-button>
         </van-col>
         <van-col span="12" v-if="[10, 20].indexOf(approval.status) > -1">
-          <van-button block type="primary" plain :to="{name: 'approvaledit', query: {id: approval.approvalId}}">修 改</van-button>
+          <van-button block type="primary" plain :to="{name: 'home', query: {id: approval.approvalId}}">修 改</van-button>
         </van-col>
       </van-row>
     </div>

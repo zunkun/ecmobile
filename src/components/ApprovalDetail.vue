@@ -81,7 +81,6 @@ export default {
         3: '其他'
       },
       approvalLists: [],
-      approvalStep: 0,
     }
   },
   methods: {

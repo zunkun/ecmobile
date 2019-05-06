@@ -2,7 +2,7 @@
   <div id="home">
     <van-panel title="员工信息">
       <van-cell-group>
-        <van-cell title="姓名" :value="$store.state.user.userName" />
+        <van-cell title="姓名" :value="approval.userName" />
         <van-cell title="部门" @click="showSelectDept">
           {{approval.deptName}}
         </van-cell>
@@ -90,9 +90,9 @@
         </van-step>
       </van-steps>
     </van-panel>
-
     <div class="button-area" v-if="approval.balance">
-      <van-button block type="primary" plain @click="saveApproval">申请出差</van-button>
+      <van-button block type="primary" plain @click="saveApproval" v-if="!approval.approvalId">申请出差</van-button>
+      <van-button block type="warning" plain @click="saveApproval" v-else>修改申请单</van-button>
     </div>
     <div v-else>
       <p>当前部门没有预算，请联系管理员调整预算再申请出差</p>
@@ -140,12 +140,17 @@
     name: 'home',
     data() {
       return {
-        balance: 0,
+        isEdit: false,
         apprvalProcess: 0,
         deptSelectShow: false,
         departmentLists: [],
         departments: [],
-        approval: {},
+        approval: {
+          trip: {},
+          invoice: {},
+          costcenter: {},
+          itineraries: [],
+        },
         defaultArea: {
           0: '421000',
           1: '401000',
@@ -166,6 +171,12 @@
           1: '火车',
           2: '汽车',
           3: '其他'
+        },
+        trafficAreaMap: {
+          0: 0,
+          1: 1,
+          2: 2,
+          3: 2
         },
         trafficLists: ['飞机', '火车', '汽车', '其他'],
         datePickerShow: false,
@@ -198,8 +209,7 @@
             this.$toast(`获取部门费用预算失败`)
             return;
           }
-          this.balance = feeRes.data.balance || 0;
-          this.approval.balance = this.balance || 0;
+          this.approval.balance = feeRes.data.balance || 0;
         }).catch();
       },
       initApproval(){
@@ -291,22 +301,24 @@
         this.getAreaLists();
       },
 
-      getAreaLists() {
-        this.$http.get(`/ec/api/area?type=${this.trafficType}`).then(res => {
-          let data = res.data;
-          if (data.errcode === 0) {
-            this.areaList = data.data;
-          }
-        })
+      async getAreaLists(type) {
+        let res = await this.$http.get(`/ec/api/area?type=${type || this.trafficType}`);
+        let data = res.data;
+        if (data.errcode === 0) {
+          this.areaList = data.data;
+        }
       },
 
-      showCity(index, areaPickType = 'depCity') {
+      async showCity(index, areaPickType = 'depCity') {
         this.itineraryIndex = index || 0;
-        this.areaShow = true;
 
         this.areaPickType = areaPickType;
         let it = this.approval.itineraries[index];
         this.activeArea = it[`${areaPickType}Code`] || this.defaultArea[this.trafficType]
+        if(it.trafficType !== this.trafficType) {
+          await this.getAreaLists(it.trafficType)
+        }        
+        this.areaShow = true;
       },
 
       pickCity(area) {
@@ -456,7 +468,6 @@
       },
 
       saveApproval() {
-        let that = this;
         let flag = true;
         let approval = this.approval;
         if(!approval.deptId) {
@@ -466,6 +477,9 @@
           flag = false;
         }
         let itineraries = approval.itineraries || []
+        if(!itineraries.length) {
+          flag = false;
+        }
         for(let it of itineraries) {
           if(!it.depCity || !it.arrCity || !it.depDate || !it.arrDate) {
             flag = false;
@@ -490,29 +504,50 @@
           return;
         }
         
+        if(this.approval.approvalId) {
+          this.updateApproval();
+          return;
+        }
+        
+        this.createApproval();
+      },
 
-        if(this.approval.balance <= 0) {
-            this.$dialog.confirm({
-              message: '部门预算不足，是否申请追加预算',
-            }).then(() => {
-              return this.appendBudget();
-            }).catch(() =>{
-              this.$toast('已取消申请追加预算');
-            })
+      updateApproval() {
+        this.$http.put(`/ec/api/approvals/${this.approval.approvalId}`,this.approval).then(res => {
+          let approvalRes = res.data;
+          
+          if(approvalRes.errcode ===0) {
+            this.$toast('出差申请单修改成功');
             return;
           }
+          this.$toast('出差申请修改失败，请重新填写或者联系管理员');
+        })
+      },
 
-          this.$http.post('/ec/api/approvals',approval).then(res => {
-            let approvalRes = res.data;
-            
-            if(approvalRes.errcode ===0) {
-              this.$toast('出差申请单填写成功，请等待领导审批');
-              that.$router.push({name: 'apply', query: {id: approvalRes.data.approvalId}})
-              // this.initApproval();
-              return;
-            }
-            this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
+      createApproval() {
+        let that = this;
+        if(this.approval.balance <= 0) {
+          this.$dialog.confirm({
+            message: '部门预算不足，是否申请追加预算',
+          }).then(() => {
+            return this.appendBudget();
+          }).catch(() =>{
+            this.$toast('已取消申请追加预算');
           })
+          return;
+        }
+
+        this.$http.post('/ec/api/approvals',this.approval).then(res => {
+          let approvalRes = res.data;
+          
+          if(approvalRes.errcode ===0) {
+            this.$toast('出差申请单填写成功，请等待领导审批');
+            that.$router.push({name: 'apply', query: {id: approvalRes.data.approvalId}})
+            // this.initApproval();
+            return;
+          }
+          this.$toast('出差申请单填写失败，请重新申请或者联系管理员');
+        })
       },
 
       pickCostCenter(title, index) {
@@ -531,6 +566,25 @@
           title: invoiceLists[index].title 
         }
         this.invoiceShow = false;
+      },
+
+      async getApprovalDepts2(approvalDepts) {
+        for(let index in approvalDepts) {
+          let listItem = {
+            title: '',
+            users: []
+          };
+          if((index === '0' || index === 0) && approvalDepts[index].deptId === Number(this.approval.deptId)) {
+            listItem.title = '直接主管';
+          } else {
+            listItem.title = `第${Number(index)+1}级主管` 
+          }
+          let users = approvalDepts[index].users ||[]
+          for(let user of users) {
+            listItem.users.push(user.userName)
+          }
+          this.approvalLists.push(listItem)
+        } 
       },
 
       async getApprovalDepts() {
@@ -563,43 +617,65 @@
             this.approvalLists.push(listItem)
           }
         }).catch(() => {})
-      }
+      },
+
+      getApproval(approvalId) {
+        this.$http.get(`/ec/api/approvals/${approvalId}`).then(res => {
+          let data = res.data;
+          if (data.errcode !== 0) {
+            this.$toast(data.errmsg)
+            return;
+          }
+            this.approval = data.data;
+            this.getApprovalDepts2(this.approval.approvalDepts);
+        }).catch(() =>{
+          this.$toast('获取申请单失败')
+        })
+      },
     },
     created() {
-      this.initApproval();
-      if (this.$store.state.user) {
-        let user = this.$store.state.user
-        let departments = user.departments || [];
-        for (let department of departments) {
-          this.departments.push(department.deptName)
-        }
-        this.departmentLists = departments;
+      if(!this.$store.state.user) {
+        this.$router.push({name: 'me'})
+        return;
+      }
+      let user = this.$store.state.user;
+
+      let departments = user.departments || [];
+      for (let department of departments) {
+        this.departments.push(department.deptName)
+      }
+      this.departmentLists = departments;
+
+      for(let item of user.costcenters) {
+        this.costcenters.push(item.title);
+      }
+      for(let item of user.invoices) {
+        this.invoices.push(item.title);
+      }
+
+      if(this.$route.query.id) {
+        this.getApproval(this.$route.query.id);
+      } else {
+        this.initApproval();        
+        this.getBalance()
+
+        this.approval.userId = user.userId;
+        this.approval.userName = user.userName;
         this.approval.deptId = departments[0].deptId;
         this.approval.deptName = departments[0].deptName;
-
-        this.getApprovalDepts()
-
         if(user.costcenters.length) {
           this.approval.costcenter = {
             id: user.costcenters[0].id,
             title: user.costcenters[0].title
           }
         }
-        for(let item of user.costcenters) {
-          this.costcenters.push(item.title);
-        }
-
         if(user.invoices.length) {
           this.approval.invoice = {
             id: user.invoices[0].id,
             title: user.invoices[0].title
           }
         }
-        for(let item of user.invoices) {
-          this.invoices.push(item.title);
-        }
-        
-        this.getBalance()
+        this.getApprovalDepts();
       }
       this.getAreaLists();
     }
