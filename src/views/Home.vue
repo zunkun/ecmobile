@@ -38,13 +38,13 @@
         {{approval.itineraries[$index].arrCity}}
       </van-cell>
 
-      <van-cell title="出发日期" required @click="showDatePicker($index, 'depDate')">
+      <van-cell title="开始时间" required @click="showDatePicker($index, 'depDate')">
         {{parseDateStr(itinerary.depDate)}}
       </van-cell>
-      <van-cell title="到达日期" required @click="showDatePicker($index, 'arrDate')">
+      <van-cell title="结束时间" required @click="showDatePicker($index, 'arrDate')">
         {{parseDateStr(itinerary.arrDate)}}
       </van-cell>
-      <van-cell title="时长(天)" required label="根据排版情况自动计算时长">
+      <van-cell title="时长(天)" required label="自动计算时长">
         {{itinerary.day}}
       </van-cell>
     </van-panel>
@@ -112,12 +112,12 @@
         @confirm="pickDate" />
     </van-popup>
 
-    <van-popup v-model="areaShow" position="bottom">
-      <van-area :area-list="areaList" :value="defaultArea[trafficType]" @cancel="areaShow=false" @confirm="pickCity" />
+    <van-popup v-model="areaShow" position="center" class="traverer-wrapper">
+      <van-tree-select :items="areaList" title="区域选择" :height="treeHeight" :main-active-index="areaActiveIndex" :active-id="activeArea"  @navclick="navArea" @itemclick="pickCity" />
     </van-popup>
 
     <van-popup v-model="travelerShow" position="center" class="traverer-wrapper">
-      <van-tree-select :items="staffLists" title="同行人" :height="treeHeight" :main-active-index="mainActiveIndex" :active-id="activeId" @navclick="onNavClick" @itemclick="pickTraveler" />
+      <van-tree-select :items="staffLists" title="同行人" :height="treeHeight" :main-active-index="travelActiveIndex" :active-id="activeId" @navclick="onNavClick" @itemclick="pickTraveler" />
     </van-popup>
 
     <van-popup v-model="costcenterShow" position="bottom">
@@ -167,16 +167,14 @@
         timeSelected: new Date(),
 
         areaShow: false,
-        areaList: {
-          province_list: {},
-          city_list: {},
-          county_list: {}
-        },
+        areaList: [],
         areaPickType: 'depCity',
         travelerShow: false,
-        treeHeight: 450,
+        areaActiveIndex: 0,
+        activeArea: '',
+        treeHeight: 550,
         travelerIndex: 0,
-        mainActiveIndex: 0,
+        travelActiveIndex: 0,
         activeId: 1,
         staffLists: [],
         costcenterShow: false,
@@ -202,8 +200,18 @@
             trafficType: 0,
             depCity: '上海',
             depCityCode: '',
+            depCityProvince: {
+              code: '',
+              name: '',
+              index: ''
+            },
             arrCity: '上海',
             arrCityCode: '',
+            arrCityProvince: {
+              code: '',
+              name: '',
+              index: ''
+            },
             depDate: null,
             arrDate: null,
             day: 1,
@@ -278,12 +286,14 @@
         this.areaShow = true;
 
         this.areaPickType = areaPickType;
+        let it = this.approval.itineraries[index];
+        this.activeArea = it[`${areaPickType}Code`] || this.defaultArea[this.trafficType]
       },
 
       pickCity(area) {
-        this.approval.itineraries[this.itineraryIndex][this.areaPickType] = area[1].name;
-        this.approval.itineraries[this.itineraryIndex][`${this.areaPickType}Code`] = area[1].code;
-
+        let it = this.approval.itineraries[this.itineraryIndex];
+        it[this.areaPickType] = area.text;
+        it[`${this.areaPickType}Code`] = area.id;
         this.areaShow = false;
       },
 
@@ -298,7 +308,7 @@
         let it = this.approval.itineraries[this.itineraryIndex];
         it[this.datePickType] = date;
         if(it.arrDate && (it.arrDate < it.depDate)) {
-          this.$toast('到达日期不得小于出发日期')
+          this.$toast('结束时间不得小于开始时间')
           it.arrDate = it.depDate;
         }
 
@@ -398,13 +408,17 @@
       },
 
       onNavClick(index) {
-        this.mainActiveIndex = index;
+        this.travelActiveIndex = index;
       },
 
       pickTraveler(staff) {
         this.approval.cotravelers[this.travelerIndex] = staff;
 
         this.travelerShow = false;
+      },
+
+       navArea(index) {
+        this.areaActiveIndex = index;
       },
 
       appendBudget() {
