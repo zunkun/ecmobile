@@ -1,5 +1,5 @@
 <template>
-  <div id="approval" v-if="approval.approvalId">
+  <div id="approval" v-if="approval.id">
     <ApprovalDetail :approval="approval" />
     <div class="button-area">
       <van-row gutter="20">
@@ -15,20 +15,20 @@
 </template>
 
 <script>
-import ApprovalDetail from '../components/ApprovalDetail';
+import ApprovalDetail from '../../components/Approval/ApprovalDetail';
 
 export default {
   name: 'apply',
   components: {ApprovalDetail},
   data() {
     return {
-      approvalId: '',
+      id: '',
       approval: {}
     }
   },
   methods: {
     getApproval() {
-      this.$http.get(`/ec/api/approvals/${this.approvalId}/detail`).then(res => {
+      this.$http.get(`/ec/api/approvals/${this.id}/detail`).then(res => {
         let data = res.data;
         if (data.errcode !== 0) {
           this.$toast(data.errmsg)
@@ -46,7 +46,7 @@ export default {
         message:'您确定要拒绝该出差申请？',
         showCancelButton: true,
       }).then(() => {
-        return this.$http.post(`/ec/api/approvals/${this.approval.approvalId}/reject`).then((res) =>{
+        return this.$http.post(`/ec/api/approvals/${this.approval.id}/reject`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
             this.$toast('拒绝成功');
@@ -65,7 +65,7 @@ export default {
         message:'您确定要通过该出差申请？',
         showCancelButton: true,
       }).then(() => {
-        return this.$http.post(`/ec/api/approvals/${this.approval.approvalId}/pass`).then((res) =>{
+        return this.$http.post(`/ec/api/approvals/${this.approval.id}/pass`).then((res) =>{
           let resData = res.data;
           if(resData.errcode === 0) {
             this.$toast('通过该申请单成功');
@@ -79,7 +79,7 @@ export default {
     }
   },
   created() {
-    this.approvalId = this.$route.query.id;
+    this.id = this.$route.query.id;
     this.getApproval();
   }
 }

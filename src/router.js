@@ -19,9 +19,18 @@ const router =  new Router({
       }
     },
     {
-      path: '/me',
-      name: 'me',
-      component: () => import('./views/Me.vue'),
+      path: '/manage',
+      name: 'manage',
+      component: () => import('./views/manage/Manage.vue'),
+      meta: {
+        title: '我的管理',
+        isAuth: true
+      }
+    },
+    {
+      path: '/applylists',
+      name: 'applylists',
+      component: () => import('./views/approval/ApplyLists.vue'),
       meta: {
         title: '我的出差',
         isAuth: true
@@ -30,7 +39,7 @@ const router =  new Router({
     {
       path: '/apply',
       name: 'apply',
-      component: () => import('./views/Apply.vue'),
+      component: () => import('./views/approval/Apply.vue'),
       meta: {
         title: '申请单明细',
         isAuth: true
@@ -39,7 +48,7 @@ const router =  new Router({
     {
       path: '/approvals',
       name: 'approvals',
-      component: () => import('./views/Approvals.vue'),
+      component: () => import('./views/approval/Approvals.vue'),
       meta: {
         title: '出差审批',
         isAuth: true
@@ -48,7 +57,7 @@ const router =  new Router({
     {
       path: '/approval',
       name: 'approval',
-      component: () => import('./views/Approval.vue'),
+      component: () => import('./views/approval/Approval.vue'),
       meta: {
         title: '出差审批',
         isAuth: true
@@ -57,12 +66,39 @@ const router =  new Router({
     {
       path: '/approvaledit',
       name: 'approvaledit',
-      component: () => import('./views/ApprovalEdit.vue'),
+      component: () => import('./views/approval/ApprovalEdit.vue'),
       meta: {
         title: '出差修改',
         isAuth: true
       }
-    }
+    },
+    {
+      path: '/applybudget',
+      name: 'applybudget',
+      component: () => import('./views/application/ApplyBudget.vue'),
+      meta: {
+        title: '预算申请',
+        isAuth: true
+      }
+    },
+    {
+      path: '/applybudgetdetil',
+      name: 'applybudgetdetil',
+      component: () => import('./views/application/ApplyBudgetDetail.vue'),
+      meta: {
+        title: '预算申请',
+        isAuth: true
+      }
+    },
+    {
+      path: '/budgetlists',
+      name: 'budgetlists',
+      component: () => import('./views/application/ApplyBudgetLists.vue'),
+      meta: {
+        title: '预算申请列表',
+        isAuth: true
+      }
+    },
   ]
 })
 

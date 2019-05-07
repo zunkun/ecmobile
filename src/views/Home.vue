@@ -11,93 +11,96 @@
         </van-cell>
       </van-cell-group>
     </van-panel>
-    <van-panel title="出差申请">
-      <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="请输入出差事由" required />
-    </van-panel>
-    <van-panel v-for="(itinerary, $index) in approval.itineraries" :key="'itinerary-' + $index">
-      <div slot="header" class="panel-head">
-        <van-row>
-          <van-col span="22" class="title">
-            {{'行程(' + ($index +1) + ')'}}
-          </van-col>
-          <van-col span="2" class="handle">
-            <van-icon name="delete" color="red" size="20px" @click="deleteItinerary($index)" />
-          </van-col>
-        </van-row>
-      </div>
-      <van-cell title="行程类型" required @click="showSelectTripWay($index)">
-        {{tripWayMap[itinerary.tripWay]}}
-      </van-cell>
-      <van-cell title="交通方式" required @click="showSelectTraffic($index)">
-        {{trafficMap[itinerary.trafficType]}}
-      </van-cell>
-
-      <van-cell title="出发城市" required @click="showCity($index, 'depCity')">
-        {{approval.itineraries[$index].depCity}}
-      </van-cell>
-
-
-      <van-cell title="目的城市" required @click="showCity($index, 'arrCity')">
-        {{approval.itineraries[$index].arrCity}}
-      </van-cell>
-
-      <van-cell title="开始时间" required @click="showDatePicker($index, 'depDate')">
-        {{parseDateStr(itinerary.depDate)}}
-      </van-cell>
-      <van-cell title="结束时间" required @click="showDatePicker($index, 'arrDate')">
-        {{parseDateStr(itinerary.arrDate)}}
-      </van-cell>
-      <van-cell title="时长(天)" required label="自动计算时长">
-        {{itinerary.day}}
-      </van-cell>
-    </van-panel>
-
-    <div class="button-area">
-      <van-button block type="warning" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
+    <div v-if="!approval.id && !approval.balance" style="padding: 4px 15px;">
+      <p>当前部门没有预算，是否申请预算</p>
+      <van-button block type="primary" plain :to="{name: 'applybudget', query: {deptId: approval.deptId}}">申请预算</van-button>
     </div>
-    <van-panel>
-      <van-field v-model="approval.trip.day" label="出差天数" required />
-      <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
-      <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
-    </van-panel>
-    <van-panel title="出差备注">
-      <van-field v-model="approval.trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
-    </van-panel>
-
-    <van-panel title="同行人员" class="traveler-head">
-      <van-cell-group>
-        <van-row v-for="(cotraveler, $index) in approval.cotravelers" :key="'cotraveler-' + $index" class="traveler-row">
-          <van-col span="22">
-            <van-cell title="姓名" :value="cotraveler.userName" @click="selectTraveler($index)">
-            </van-cell>
-          </van-col>
-          <van-col span="2">
-            <van-icon name="delete" class="traveler-icon" @click="deleteTraveler($index, 'delete')" />
-          </van-col>
-        </van-row>
-
-        <div class="button-area">
-          <van-button block type="warning" plain @click="addCotraveler"><span class="icon-btn">+</span>增加同行人员</van-button>
+    <div v-if="approval.id || approval.balance">
+      <van-panel title="出差申请">
+        <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="请输入出差事由" required />
+      </van-panel>
+      <van-panel v-for="(itinerary, $index) in approval.itineraries" :key="'itinerary-' + $index">
+        <div slot="header" class="panel-head">
+          <van-row>
+            <van-col span="22" class="title">
+              {{'行程(' + ($index +1) + ')'}}
+            </van-col>
+            <van-col span="2" class="handle">
+              <van-icon name="delete" color="red" size="20px" @click="deleteItinerary($index)" />
+            </van-col>
+          </van-row>
         </div>
-      </van-cell-group>
+        <van-cell title="行程类型" required @click="showSelectTripWay($index)">
+          {{tripWayMap[itinerary.tripWay]}}
+        </van-cell>
+        <van-cell title="交通方式" required @click="showSelectTraffic($index)">
+          {{trafficMap[itinerary.trafficType]}}
+        </van-cell>
 
-    </van-panel>
-    <van-panel title="审批流程">
-      <van-steps direction="vertical" >
-        <van-step v-for="(listItem, $index) in approvalLists" :key="'listItem-' + $index">
-          <h3>{{listItem.title}}</h3>
-          <p>{{listItem.users.join('、')}}</p>
-        </van-step>
-      </van-steps>
-    </van-panel>
-    <div class="button-area" v-if="approval.balance">
-      <van-button block type="primary" plain @click="saveApproval" v-if="!approval.approvalId">申请出差</van-button>
-      <van-button block type="warning" plain @click="saveApproval" v-else>修改申请单</van-button>
-    </div>
-    <div v-else>
-      <p>当前部门没有预算，请联系管理员调整预算再申请出差</p>
-    </div>
+        <van-cell title="出发城市" required @click="showCity($index, 'depCity')">
+          {{approval.itineraries[$index].depCity}}
+        </van-cell>
 
+
+        <van-cell title="目的城市" required @click="showCity($index, 'arrCity')">
+          {{approval.itineraries[$index].arrCity}}
+        </van-cell>
+
+        <van-cell title="开始时间" required @click="showDatePicker($index, 'depDate')">
+          {{parseDateStr(itinerary.depDate)}}
+        </van-cell>
+        <van-cell title="结束时间" required @click="showDatePicker($index, 'arrDate')">
+          {{parseDateStr(itinerary.arrDate)}}
+        </van-cell>
+        <van-cell title="时长(天)" required label="自动计算时长">
+          {{itinerary.day}}
+        </van-cell>
+      </van-panel>
+
+      <div class="button-area">
+        <van-button block type="warning" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
+      </div>
+      <van-panel>
+        <van-field v-model="approval.trip.day" label="出差天数" required />
+        <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
+        <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
+      </van-panel>
+      <van-panel title="出差备注">
+        <van-field v-model="approval.trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
+      </van-panel>
+
+      <van-panel title="同行人员" class="traveler-head">
+        <van-cell-group>
+          <van-row v-for="(cotraveler, $index) in approval.cotravelers" :key="'cotraveler-' + $index" class="traveler-row">
+            <van-col span="22">
+              <van-cell title="姓名" :value="cotraveler.userName" @click="selectTraveler($index)">
+              </van-cell>
+            </van-col>
+            <van-col span="2">
+              <van-icon name="delete" class="traveler-icon" @click="deleteTraveler($index, 'delete')" />
+            </van-col>
+          </van-row>
+
+          <div class="button-area">
+            <van-button block type="warning" plain @click="addCotraveler"><span class="icon-btn">+</span>增加同行人员</van-button>
+          </div>
+        </van-cell-group>
+
+      </van-panel>
+      <van-panel title="审批流程">
+        <van-steps direction="vertical" >
+          <van-step v-for="(listItem, $index) in approvalLists" :key="'listItem-' + $index">
+            <h3>{{listItem.title}}</h3>
+            <p>{{listItem.users.join('、')}}</p>
+          </van-step>
+        </van-steps>
+      </van-panel>
+      <div class="button-area" v-if="approval.balance">
+        <van-button block type="primary" plain @click="saveApproval" v-if="!approval.id">申请出差</van-button>
+        <van-button block type="warning" plain @click="saveApproval" v-else>修改申请单</van-button>
+      </div>
+    </div>
+    
     <van-popup v-model="deptSelectShow" position="bottom">
       <van-picker :columns="departments" :show-toolbar="true" @cancel="deptSelectShow=false" @confirm="selectDept" />
     </van-popup>
@@ -140,12 +143,12 @@
     name: 'home',
     data() {
       return {
-        isEdit: false,
         apprvalProcess: 0,
         deptSelectShow: false,
         departmentLists: [],
         departments: [],
         approval: {
+          id: '',
           trip: {},
           invoice: {},
           costcenter: {},
@@ -504,7 +507,7 @@
           return;
         }
         
-        if(this.approval.approvalId) {
+        if(this.approval.id) {
           this.updateApproval();
           return;
         }
@@ -513,7 +516,7 @@
       },
 
       updateApproval() {
-        this.$http.put(`/ec/api/approvals/${this.approval.approvalId}`,this.approval).then(res => {
+        this.$http.put(`/ec/api/approvals/${this.approval.id}`,this.approval).then(res => {
           let approvalRes = res.data;
           
           if(approvalRes.errcode ===0) {
@@ -542,7 +545,7 @@
           
           if(approvalRes.errcode ===0) {
             this.$toast('出差申请单填写成功，请等待领导审批');
-            that.$router.push({name: 'apply', query: {id: approvalRes.data.approvalId}})
+            that.$router.push({name: 'apply', query: {id: approvalRes.data.id}})
             // this.initApproval();
             return;
           }
@@ -619,8 +622,8 @@
         }).catch(() => {})
       },
 
-      getApproval(approvalId) {
-        this.$http.get(`/ec/api/approvals/${approvalId}`).then(res => {
+      getApproval(id) {
+        this.$http.get(`/ec/api/approvals/${id}`).then(res => {
           let data = res.data;
           if (data.errcode !== 0) {
             this.$toast(data.errmsg)
@@ -646,14 +649,15 @@
       }
       this.departmentLists = departments;
 
-      for(let item of user.costcenters) {
+      for(let item of (user.costcenters || [])) {
         this.costcenters.push(item.title);
       }
-      for(let item of user.invoices) {
+      for(let item of (user.invoices || [])) {
         this.invoices.push(item.title);
       }
 
       if(this.$route.query.id) {
+        this.approval.id = this.$route.query.id;
         this.getApproval(this.$route.query.id);
       } else {
         this.initApproval();        

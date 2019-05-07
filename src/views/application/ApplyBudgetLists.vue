@@ -1,33 +1,31 @@
 <template>
-  <div id="me">
-    <ApplyBasic :approvals="approvals" :count="count" />
+  <div id="budgets">
+asdf
   </div>
 </template>
 
 <script>
-import ApplyBasic from '../components/ApplyBasic'
 export default {
-  name: 'Me',
-  components: { ApplyBasic },
+  name: 'ApplyBudgetLists',
   data() {
     return {
       page: 1,
       limit: 10,
       count: 0,
-      approvals: [],
+      applications: [],
     }
   },
   methods: {
-    getApprovals() {
-      if(this.count && this.approvals.length >= this.count) {
+    getApplications() {
+      if(this.count && this.applications.length >= this.count) {
         return;
       }
-      this.$http.get(`/ec/api/approvals/lists/basic?page=${this.page++}&limit=${this.limit}`).then(res => {
+      this.$http.get(`/ec/api/applications/lists/basic?page=${this.page++}&limit=${this.limit}`).then(res => {
         let data = res.data;
         if(data.errcode === 0) {
-          let approvalData = data.data;
-          this.count = approvalData.count;
-          this.approvals = this.approvals.concat(approvalData.approvals);
+          let applicationData = data.data;
+          this.count = applicationData.count;
+          this.applications = this.applications.concat(applicationData.applications);
         }
       }).catch(() =>{
         this.$toast(`获取申请单列表失败`);
@@ -35,7 +33,7 @@ export default {
     },
 
     lowEnough() {
-      let mainWindow = document.getElementById('me');
+      let mainWindow = document.getElementById('budgets');
       if(!mainWindow) return;
       let pageHeight = Math.max(mainWindow.scrollHeight, document.body.offsetHeight);
       let viewportHeight = window.innerHeight ||
@@ -48,7 +46,7 @@ export default {
       return pageHeight - viewportHeight - scrollHeight < 60;
     },
 
-    watchApplyScroll(event, wait=200, mustTime=3000) {
+    watchScroll(event, wait=200, mustTime=3000) {
       let that = this;
       if (!this.startTime) {
         this.startTime = Date.now();
@@ -60,14 +58,14 @@ export default {
           this.startTime = currentTime;
           clearTimeout(this.timeout)
           if (that.lowEnough()) {
-            that.getApprovals();
+            that.getApplications();
           }
         } else {
           clearTimeout(this.timeout)
           this.timeout = setTimeout(function () {
             this.startTime = Date.now();
             if (that.lowEnough()) {
-             that.getApprovals();
+             that.getApplications();
             }
           }, wait)
         }
@@ -77,8 +75,8 @@ export default {
   },
 
   created() {
-    this.getApprovals();
-    window.addEventListener('scroll', this.watchApplyScroll(), true)
+    this.getApplications();
+    window.addEventListener('scroll', this.watchScroll(), true)
   }
 }
 </script>

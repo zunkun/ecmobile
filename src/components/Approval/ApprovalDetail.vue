@@ -110,7 +110,7 @@ export default {
       }
     },
     getApprpvalUsers(approval) {
-      if(!approval.approvalId) {
+      if(!approval.id) {
         return;
       }
 

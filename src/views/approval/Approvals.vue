@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import ApprovalBasic from '../components/ApprovalBasic'
+import ApprovalBasic from '../../components/Approval/ApprovalBasic'
 export default {
   name: 'approvals',
   components: { ApprovalBasic },

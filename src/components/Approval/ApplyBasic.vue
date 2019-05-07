@@ -1,17 +1,16 @@
 <template>
-  <div id="approvalbasic">
+  <div id="applybasic">
     <van-panel
       :title="approval.trip.title" 
       :desc="approval.trip.cause" 
-      :status="approvalStatus[approval.status]" 
+      :status="applyStatus[approval.status]" 
       class="approval-panel" 
       v-for="(approval, $index) in approvals" :key="'approval-'+$index">
       <div class="approval-content">
-        <p>申请人: {{approval.userName}}</p>
         <p>申请时间: {{parseDate(approval.createTime)}}</p>
       </div>
       <div slot="footer" class="approval-footer">
-        <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'approval', query: {id: approval.approvalId}}">详细</van-button>
+        <van-button size="small" type="primary" plain class="footer-btn" :to="{name: 'apply', query: {id: approval.id}}">详细</van-button>
       </div>
     </van-panel>
     <van-panel v-if="!count" title="出差审批单" class="approval-panel">
@@ -31,7 +30,7 @@ export default {
   props: ['approvals', 'count'],
   data() {
     return {
-      approvalStatus: {
+      applyStatus: {
         10: '待审批',
         20: '审批中',
         30: '审批通过',
@@ -74,3 +73,4 @@ export default {
   font-size: 20px;
 }
 </style>
+
