@@ -1,12 +1,14 @@
 <template>
   <div id="budgets">
-asdf
+    <StaffBasic :applications="applications" :count="count" />
   </div>
 </template>
 
 <script>
+import StaffBasic from '../../components/Application/StaffBasic.vue'
 export default {
   name: 'ApplyBudgetLists',
+  components: { StaffBasic },
   data() {
     return {
       page: 1,

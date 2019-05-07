@@ -219,7 +219,7 @@
         this.approval =  {
           deptId: null,
           deptName: null,
-          balance: 0,
+          balance: 1,
           trip: {
             day: 1,
             title: '',

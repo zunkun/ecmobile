@@ -1,7 +1,7 @@
 <template>
   <div id="applybasic">
     <van-panel
-      :title="approval.trip.title" 
+      title="出差申请" 
       :desc="approval.trip.cause" 
       :status="applyStatus[approval.status]" 
       class="approval-panel" 
