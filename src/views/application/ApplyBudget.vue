@@ -6,17 +6,21 @@
         <van-cell title="部门">
           {{application.deptName}}
         </van-cell>
-        <van-cell title="预算部门" v-if="application.group">
-          {{application.group.name}}
-        </van-cell>
-        <van-cell title="预算余额">
-            {{application.balance}}
+        <van-cell title="预算科目" v-if="application.type">
+          {{feeMap[application.type]}}
         </van-cell>
       </van-cell-group>
-      <van-field v-model="application.amount" label="申请金额(元)" placeholder="请输入身亲金额" type="number" required />
     </van-panel>
     <van-panel title="申请原因">
       <van-field v-model="application.cause" type="textarea" placeholder="申请原因（必填，少于100字）" />
+    </van-panel>
+    <van-panel title="申请流程">
+      <van-steps direction="vertical" :active="active">
+        <van-step v-for="(processItem, $index) in processLists" :key="'process-' + $index">
+          <h3>{{processItem.title}}</h3>
+          <p>{{processItem.userNames.join('、')}}</p>
+        </van-step>
+      </van-steps>
     </van-panel>
     <div class="button-area">
       <van-button block type="primary" plain @click="saveApplication" v-if="!application.id">申请预算</van-button>
@@ -29,7 +33,20 @@ export default {
   name: 'nobalance',
   data() {
     return {
-      application: { group: {}},
+      active: 0,
+      feeMap: {
+        trip: '差旅费',
+        benefits: '福利费',
+        others: '其他',
+      },
+      application: { group: {}, type: '差旅'},
+      process: {
+        group: {},
+        applications: [],
+        approvals: [],
+        finances: [],
+      },
+      processLists: [],
     }
   },
   methods: {
@@ -40,8 +57,6 @@ export default {
         userName: user.userName,
         deptId: '',
         deptName: '',
-        balance: 0,
-        amount: 1,
         cause: '',
         group: {}
       };
@@ -58,17 +73,6 @@ export default {
           this.application.group = dept.group || {}
         }
       }).catch(() => {})
-      this.getBalance(this.application.deptId);
-    },
-    getBalance(deptId) {
-      this.$http.get(`/ec/api/fees/count?deptId=${deptId || this.application.deptId}`).then((res) =>{
-        let feeRes = res.data;
-        if(feeRes.errcode !== 0) {
-          this.$toast(`获取部门费用预算失败`)
-          return;
-        }
-        this.application.balance = feeRes.data.balance || 0;
-      }).catch();
     },
     getApplication() {
       if(!this.$route.query.id) {
@@ -91,7 +95,7 @@ export default {
       this.createApplication();
     },
     updateApplication() {
-      if(!this.application.amount || !this.application.cause) {
+      if(!this.application.cause) {
         this.$toast('请正确填写申请单信息')
         return;
       }
@@ -105,7 +109,7 @@ export default {
       })
     },
     createApplication() {
-      if(!this.application.amount || !this.application.cause) {
+      if(!this.application.cause) {
         this.$toast('请正确填写申请单信息')
         return;
       }
@@ -118,14 +122,129 @@ export default {
         }
         this.$toast.fail('申请失败');
       })
-    }
+    },
+    initStaffProcess() {
+      this.processLists.push({
+        title: '申请预算',
+        userNames: []
+      })
+      for(let [index, item] of this.process.applications.entries()) {
+        let processItem = {
+          title: `第${index+1}级主管审批`,
+          userNames: []
+        };
+        if(item.deptId === this.process.deptId) {
+          processItem.title = '直接主管审批'
+        }
+        for(let user of item.users) {
+          processItem.userNames.push(user.userName)
+        }
+        this.processLists.push(processItem)
+      }
+
+      let financeItem = {
+        title: '财务调整',
+        userNames: []
+      }
+      for(let item of this.process.finances) {
+        financeItem.userNames.push(item.userName)
+      }
+
+      this.processLists.push(financeItem)
+
+      this.processLists.push({
+        title: '预算调出部门领导审批',
+        userNames: []
+      })
+
+      this.processLists.push({
+        title: '预算调入部门领导审批',
+        userNames: []
+      })
+      this.processLists.push({
+        title: '预算调整',
+        userNames: []
+      })
+
+    },
+    getStaffProcess(deptId) {
+      this.$http.get(`/ec/api/processes/personal/${deptId || this.application.deptId}`).then((res) =>{
+        let processRes = res.data;
+        if(processRes.errcode !== 0) {
+          this.$toast(`获取申请流程失败`)
+          return;
+        }
+        this.process = processRes.data || {};
+        
+        this.initStaffProcess();
+      }).catch();
+    },
+
+    initProcess() {
+      this.processLists.push({
+        title: '申请预算',
+        userNames: []
+      })
+      for(let [index, item] of this.process.applications.entries()) {
+        let processItem = {
+          title: `第${index+1}级主管审批`,
+          userNames: []
+        };
+        if(item.deptId === this.process.deptId) {
+          processItem.title = '直接主管审批'
+        }
+        for(let user of item.users) {
+          processItem.userNames.push(user.userName)
+        }
+        this.processLists.push(processItem)
+      }
+      let financeItem = {
+        title: '财务调整',
+        userNames: []
+      }
+      for(let item of this.process.finances.users) {
+        financeItem.userNames.push(item.userName)
+      }
+
+      this.processLists.push(financeItem)
+
+      this.processLists.push({
+        title: '预算调出部门领导审批',
+        userNames: []
+      })
+
+      this.processLists.push({
+        title: '预算调入部门领导审批',
+        userNames: []
+      })
+      this.processLists.push({
+        title: '预算调整',
+        userNames: []
+      })
+    },
+    getProcess() {
+      if(!this.$route.query.id) {
+        return;
+      }
+      this.$http.get(`/ec/api/processes/application/${this.$route.query.id}`).then(res => {
+        let resData = res.data;
+        if(resData.errcode === 0) {
+          this.process = resData.data;
+          this.initProcess()
+          return;
+        }
+      })
+    },
   },
   created() {
     if(this.$route.query.id) {
       this.getApplication();
+      this.getProcess()
     } else {
       this.initApplication();
-      this.setDeptInfo()
+      this.setDeptInfo();
+      this.getStaffProcess()
+      this.application.type = this.$route.query.type || 'trip'
     }
   }
 }

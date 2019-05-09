@@ -2,12 +2,11 @@
   <div id="staffbasic">
     <van-panel
       title="预算申请" 
-      :desc="application.cause" 
       :status="applicationStatus[application.status]" 
       class="application-panel" 
       v-for="(application, $index) in applications" :key="'application-'+$index">
       <div class="application-content">
-        <p>申请费用: {{application.balance ||0}}元</p>
+        <p>申请原因: {{application.cause}}</p>
         <p>申请时间: {{parseDate(application.createTime)}}</p>
       </div>
       <div slot="footer" class="application-footer">
