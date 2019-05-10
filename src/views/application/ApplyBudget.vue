@@ -99,7 +99,7 @@ export default {
         this.$toast('请正确填写申请单信息')
         return;
       }
-      this.$http.put(`/api/applications/${this.application.id}`, this.application).then((res) => {
+      this.$http.put(`/ec/api/applications/${this.application.id}`, this.application).then((res) => {
         let resData = res.data;
         if(resData.errcode === 0) {
           this.$toast.success('修改成功')
@@ -113,7 +113,7 @@ export default {
         this.$toast('请正确填写申请单信息')
         return;
       }
-      this.$http.post('/api/applications', this.application).then((res) => {
+      this.$http.post('/ec/api/applications', this.application).then((res) => {
         let resData = res.data;
         if(resData.errcode === 0) {
           this.$toast.success('申请成功')

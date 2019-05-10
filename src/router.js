@@ -99,6 +99,15 @@ const router =  new Router({
         isAuth: true
       }
     },
+    {
+      path: '/budget',
+      name: 'budget',
+      component: () => import('./views/application/Budget.vue'),
+      meta: {
+        title: '预算审批',
+        isAuth: true
+      }
+    }
   ]
 })
 

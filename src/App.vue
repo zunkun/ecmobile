@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view />
-    <div style="margin-bottom:60px;"></div>
+    <div style="margin-bottom:70px;"></div>
     <van-tabbar v-model="active">
       <van-tabbar-item icon="orders-o" :to="{name: 'home'}">出差</van-tabbar-item>
       <van-tabbar-item icon="sign" :info="$store.state.approvalCount" v-if="$store.state.user.isLeader" :to="{name: 'approvals', query: {type: 0}}">审批</van-tabbar-item>

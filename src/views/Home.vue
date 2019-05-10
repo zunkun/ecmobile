@@ -6,9 +6,6 @@
         <van-cell title="部门" @click="showSelectDept">
           {{approval.deptName}}
         </van-cell>
-        <van-cell title="预算余额">
-          {{approval.balance}}
-        </van-cell>
       </van-cell-group>
     </van-panel>
     <div v-if="!approval.id && !approval.balance" style="padding: 4px 15px;">

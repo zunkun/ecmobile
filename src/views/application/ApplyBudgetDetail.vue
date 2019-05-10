@@ -1,15 +1,21 @@
 <template>
   <div id="budgetdetail">
     <FormBasic :application="application" />
-    <van-panel title="申请流程">
-      <van-steps direction="vertical" :active="active">
-        <van-step v-for="(processItem, $index) in processLists" :key="'process-' + $index">
-          <h3>{{processItem.title}}</h3>
-          <p>{{processItem.userNames.join('、')}}</p>
-        </van-step>
-      </van-steps>
-    </van-panel>
-    <div class="button-area" v-if="application.id">
+    <div class="pz" v-if="process.applications">
+      <div v-for="(item, $index) in process.applications" :key="'application-' + $index">
+        <div v-if="item.approvalTime || item.approvalUser" class="note">
+          <p><strong>审批人:</strong> {{item.approvalUser.userName}}</p>
+          <p v-if="item.note"><strong>意见:</strong> {{item.note}}</p>
+          <p v-if="item.approvalTime"><strong>时间:</strong> {{parseTime(item.approvalTime)}}</p>
+          <p><strong>结果:</strong> {{applicationStatusMap[item.status]}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="pz">
+      <p><strong>当前状态:</strong> <span class="statusz">  {{statusMap[process.status]}}</span></p>
+    </div>
+
+    <div class="button-area" v-if="[10,20].indexOf(process.status) > -1">
       <van-row gutter="20">
         <van-col span="12">
           <van-button block type="danger" plain @click="cancelApplication" >撤 销</van-button>
@@ -29,6 +35,24 @@ export default {
   components: { FormBasic },
   data() {
     return {
+      applicationStatusMap: {
+        10: '审批中',
+        20: '同意',
+        30: '拒绝',
+      },
+      statusMap: {
+        10: '审批中',
+        11: '员工取消',
+        20: '审批中',
+        21: '主管拒绝',
+        30: '财务调整中',
+        31: '财务撤回',
+        40: '调出部门审批中',
+        50: '调入部门审批中',
+        60: '审批通过',
+        61: '审批通过',
+        62: '审批通过'
+      },
       active: 0,
       application: {
         group: {}
@@ -38,6 +62,10 @@ export default {
     }
   },
   methods: {
+    parseTime(date) {
+      date = new Date(date)
+      return `${date.getFullYear()}年${date.getMonth() +1}月${date.getDate()}日${date.getHours()}时${date.getMinutes()}分`
+    },
     getApplication() {
       if(!this.$route.query.id) {
         return;
@@ -108,7 +136,15 @@ export default {
     },
 
     cancelApplication() {
-      
+      this.$http.post(`/ec/api/processes/application/${this.application.id}/cancel`).then((res) => {
+        let resData = res.data;
+        if(resData.errcode === 0) {
+          this.$toast.success('操作成功');
+          this.getProcess()
+          return;
+        }
+        this.$toast.fail('操作失败');
+      })
     }
   },
   created() {
@@ -119,6 +155,8 @@ export default {
 </script>
 
 <style>
-
+.pz {
+  padding: 0px 15px;
+}
 </style>
 
