@@ -312,7 +312,7 @@ export default {
       // 鉴权
       if(this.type === 'application') {
         this.authority.application = false;
-        if(this.process.status === 20) {
+        if(this.process.status === 10) {
           for(let item of this.process.applications) {
             if(item.approvalTime) {
               continue;
