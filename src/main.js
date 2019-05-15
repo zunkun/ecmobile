@@ -35,6 +35,7 @@ if (!localToken || expire < Date.now()) {
             localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
 
             store.commit('setUser', user)
+            window.location.reload();
           }
         }).catch(() => {})
       },

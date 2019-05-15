@@ -206,7 +206,7 @@
         this.$http.get(`/ec/api/fees/count?deptId=${deptId || this.approval.deptId}`).then((res) =>{
           let feeRes = res.data;
           if(feeRes.errcode !== 0) {
-            this.$toast(`获取部门费用预算失败`)
+            // this.$toast(`获取部门费用预算失败`)
             return;
           }
           this.approval.balance = feeRes.data.balance || 0;
@@ -592,7 +592,7 @@
           return;
         }
 
-        this.$http.get(`/ec/api/depts/approval/${this.approval.deptId}`).then(res => {
+        this.$http.get(`/ec/api/staffs/process`).then(res => {
           let resData = res.data;
           let approvalDepts = [];
           if(resData.errcode === 0) {
@@ -629,7 +629,7 @@
             this.approval = data.data;
             this.getApprovalDepts2(this.approval.approvalDepts);
         }).catch(() =>{
-          this.$toast('获取申请单失败')
+          // this.$toast('获取申请单失败')
         })
       },
     },
