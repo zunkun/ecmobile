@@ -473,12 +473,21 @@
         if(!approval.deptId) {
           flag = false;
         }
-        if(!approval.trip.day || !approval.trip.cause) {
+        if(!approval.trip.cause) {
           flag = false;
+          this.$toast(`出差原因未填写`)
+          rturn;
+        }
+        if(!approval.trip.day) {
+          flag = false;
+          this.$toast(`请选择出差开始结束日期`)
+          rturn;
         }
         let itineraries = approval.itineraries || []
         if(!itineraries.length) {
           flag = false;
+          this.$toast(`行程列表未填写`)
+          rturn;
         }
         for(let it of itineraries) {
           if(!it.depCity || !it.arrCity || !it.depDate || !it.arrDate) {
@@ -490,7 +499,7 @@
         }
 
         if(!flag) {
-          this.$toast('申请单填写不正确，请正确填写')
+          this.$toast('请正确填写行程列表')
           return;
         }
 
