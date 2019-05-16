@@ -58,7 +58,7 @@
         <van-button block type="warning" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
       </div>
       <van-panel>
-        <van-field v-model="approval.trip.day" label="出差天数" required />
+        <van-field v-model="approval.trip.day" label="出差天数" required readonly />
         <van-field label="成本中心" v-model="approval.costcenter.title" readonly @click="costcenterShow=true" />
         <van-field label="发票抬头" v-model="approval.invoice.title" readonly @click="invoiceShow=true" />
       </van-panel>
