@@ -9,9 +9,9 @@
       </van-cell-group>
     </van-panel>
     <div v-if="!approval.id && !approval.balance" style="padding: 4px 15px;">
-      <p>当前部门没有预算，是否申请预算</p>
-      <van-button block type="primary" plain :to="{name: 'applybudget', query: {deptId: approval.deptId}}">申请预算</van-button>
+      <p>{{approval.deptName}} 部门预算不足，无法申请出差</p>
     </div>
+
     <div v-if="approval.id || approval.balance">
       <van-panel title="出差申请">
         <van-field v-model="approval.trip.cause" type="textarea" label="出差事由" placeholder="请输入出差事由" required />

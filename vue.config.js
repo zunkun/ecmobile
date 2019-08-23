@@ -5,11 +5,11 @@ module.exports = {
     port: 4500,
     proxy: {
       '/ec/api': {
-        target: 'https://portal.haierfinancial.com:18612/',
+        target: 'http://127.0.0.1:5600/',
         secure: false,
         ws: true,
         changeOrigin: true,
-        // pathRewrite: {'^/ec/api' : '/api'}
+        pathRewrite: {'^/ec/api' : '/api'}
       },
     }
   }
