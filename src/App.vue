@@ -1,80 +1,84 @@
 <template>
   <div id="app">
-    <van-panel title="员工信息" class="task-panel" v-if="!balance">
-      <van-cell-group>
-        <van-cell title="姓名" :value="user.userName" />
-        <van-cell title="部门" is-link :value="deptName" />
-      </van-cell-group>
-      <p class="desc"> {{deptName}}部门预算不足，无法申请出差</p>
-    </van-panel>
-
     <van-panel class="task-panel1">
       <div slot="header" hidden></div>
       <van-cell-group>
-        <van-field v-model="trip.reason" label="出差事由" required placeholder="请输入出差事由" />
+        <van-cell title="姓名" :value="trip.userName" />
+        <van-cell title="部门" is-link :value="trip.deptName" @click="showSelectDept" />
+        <van-cell title="预算余额(元)" :value="trip.balance" />
+
+        <van-field v-model="trip.reason" label="出差事由" required placeholder="请输入出差事由" v-if="trip.balance > 0"/>
+        <p class="desc" v-if="trip.balance <= 0">{{trip.deptName}}部门预算不足，不能提交出差</p>
       </van-cell-group>
     </van-panel>
 
-    <van-panel class="task-panel" v-for="(it, $index) in trip.itineraries" :key="'it-' + $index">
-      <div slot="header" class="trip-head">
-        <van-row>
-          <van-col span="20" class="title" v-if="$index === 0">
-            行程
-          </van-col>
-          <van-col span="20" class="title" v-else>
-            {{'行程(' + ($index +1) + ')'}}
-          </van-col>
+    <div v-if="trip.balance > 0" class="z-w">
+      <van-panel class="task-panel" v-for="(it, $index) in trip.itineraries" :key="'it-' + $index">
+        <div slot="header" class="trip-head">
+          <van-row>
+            <van-col span="20" class="title" v-if="$index === 0">
+              行程
+            </van-col>
+            <van-col span="20" class="title" v-else>
+              {{'行程(' + ($index +1) + ')'}}
+            </van-col>
 
-          <van-col span="4" class="handle" v-if="trip.itineraries.length !== 1">
-            <span class="text-danger" @click="deleteItinerary($index)">删除</span>
-          </van-col>
-        </van-row>
+            <van-col span="4" class="handle" v-if="trip.itineraries.length !== 1">
+              <span class="text-danger" @click="deleteItinerary($index)">删除</span>
+            </van-col>
+          </van-row>
+        </div>
+
+        <van-cell-group>
+          <van-cell title="交通工具" class="trans">
+            <van-button v-for="(tripwayName, tripwayType) in transMap" :key="'tripwayType' + $index + '-' + tripwayType"
+              type="info" size="small" :plain="it.tripwayType !== Number(tripwayType)" :text="tripwayName"
+              @click="selectTrans(it, tripwayName, tripwayType)" />
+          </van-cell>
+          <van-field v-model="it.tripwayName" required placeholder="请填写交通工具名称（必填）" v-if="it.tripwayType === 4" />
+
+          <van-cell title="单程往返" class="trans">
+            <van-button v-for="(oneRound, $roundIndex) in ['单程', '往返']" :key="'oneRound' + $roundIndex" type="info"
+              size="small" :plain="it.oneRound !== oneRound" :text="oneRound" @click="selectOneRound(it, oneRound)" />
+          </van-cell>
+          <van-field v-model="it.depCity" label="出发城市" required placeholder="出发城市" v-if="tripwayType == 3 || tripwayType ==4" />
+          <van-field v-model="it.arrCity" label="目的城市" required placeholder="目的城市" v-if="tripwayType == 3 || tripwayType ==4" />
+          <van-cell title="出发城市" required is-link :value="it.depCity" @click="chooseCity($index, 'depCity')" v-if="tripwayType == 1 || tripwayType ==2" />
+          <van-cell title="目的城市" required is-link :value="it.arrCity"  @click="chooseCity($index, 'arrCity')" v-if="tripwayType == 1 || tripwayType ==2"/>
+
+          <van-cell title="开始时间" required is-link :value="it.depDateStr" @click="chooseDate(it, 'depDate', it.depDate)" />
+          <van-cell title="结束时间" required is-link :value="it.arrDateStr" @click="chooseDate(it, 'arrDate', it.arrDate)" />
+          <van-cell title="时长（天）" required label="自动计算时长" :value="it.tripDay" />
+        </van-cell-group>
+      </van-panel>
+      <div class="itbtn">
+        <van-button block type="info" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
       </div>
 
-      <van-cell-group>
-        <van-cell title="交通工具" class="trans">
-          <van-button v-for="(tripwayName, tripwayType) in transMap" :key="'tripwayType' + $index + '-' + tripwayType"
-            type="info" size="small" :plain="it.tripwayType !== Number(tripwayType)" :text="tripwayName"
-            @click="selectTrans(it, tripwayName, tripwayType)" />
-        </van-cell>
-        <van-field v-model="it.tripwayName" required placeholder="请填写交通工具名称（必填）" v-if="it.tripwayType === 4" />
+      <van-panel title="出差备注" class="task-panel">
+        <van-cell-group>
+          <van-field v-model="trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
+        </van-cell-group>
+      </van-panel>
 
-        <van-cell title="单程往返" class="trans">
-          <van-button v-for="(oneRound, $roundIndex) in ['单程', '往返']" :key="'oneRound' + $roundIndex" type="info"
-            size="small" :plain="it.oneRound !== oneRound" :text="oneRound" @click="selectOneRound(it, oneRound)" />
-        </van-cell>
-        <van-field v-model="it.depCity" label="出发城市" required placeholder="出发城市" v-if="tripwayType == 3 || tripwayType ==4" />
-        <van-field v-model="it.arrCity" label="目的城市" required placeholder="目的城市" v-if="tripwayType == 3 || tripwayType ==4" />
-        <van-cell title="出发城市" required is-link :value="it.depCity" @click="chooseCity($index, 'depCity')" v-if="tripwayType == 1 || tripwayType ==2" />
-        <van-cell title="目的城市" required is-link :value="it.arrCity"  @click="chooseCity($index, 'arrCity')" v-if="tripwayType == 1 || tripwayType ==2"/>
-
-        <van-cell title="开始时间" required is-link :value="it.depDateStr" @click="chooseDate(it, 'depDate', it.depDate)" />
-        <van-cell title="结束时间" required is-link :value="it.arrDateStr" @click="chooseDate(it, 'arrDate', it.arrDate)" />
-        <van-cell title="时长（天）" required label="自动计算时长" :value="it.tripDay" />
-      </van-cell-group>
-    </van-panel>
-    <div class="itbtn">
-      <van-button block type="info" plain @click="addItinerary"><span class="icon-btn">+</span> 增加行程</van-button>
+      <van-panel class="task-panel">
+        <div slot="header" hidden></div>
+        <van-cell-group>
+          <van-cell title="同行人员" is-link @click="chooseFellows" :value="fellowStr" />
+        </van-cell-group>
+      </van-panel>
+      <div class="itbtn">
+        <van-button block type="info" @click="commit"> 提 交 出 差</van-button>
+      </div>
     </div>
 
-    <van-panel title="出差备注" class="task-panel">
-      <van-cell-group>
-        <van-field v-model="trip.remark" type="textarea" placeholder="请输入具体的出差备注（选填，少于500字）" />
-      </van-cell-group>
-    </van-panel>
-
-    <van-panel class="task-panel">
-      <div slot="header" hidden></div>
-      <van-cell-group>
-        <van-cell title="同行人员" is-link @click="chooseFellows" :value="trip.fellowStr" />
-      </van-cell-group>
-    </van-panel>
-    <div class="itbtn">
-      <van-button block type="info"> 提 交 出 差</van-button>
-    </div>
 
     <van-popup v-model="stationShow" position="right" :overlay="false" :duration="0" class="popup-z">
       <Station :tripwayType="tripwayType" @closepage="closePage"/>
+    </van-popup>
+
+    <van-popup v-model="deptSelectShow" position="bottom">
+      <van-picker :columns="departments" :show-toolbar="true" @cancel="deptSelectShow=false" @confirm="selectDept" />
     </van-popup>
 
 
@@ -88,12 +92,8 @@
     components: { Station },
     data() {
       return {
-        isInited: false, // 显示spinner
         departments: [],
         departmentLists: [],
-        balance: 10000,
-        user: {},
-        deptName: '',
         transMap: {
           1: '飞机',
           2: '火车',
@@ -120,17 +120,24 @@
           tripDay: '',
         },
         trip: {
+          userId: '',
+          userName: '',
+          deptId: '',
+          deptName: '',
+          balance: 1000,
           reason: '',
           itineraries: [],
           remark: '', // 备注
           fellowUserIds: [],
           fellowUsers: [], // 同行人userId
-          fellowDepts: [], // 同行人userName
-          fellowDeptIds: [],
-          fellowCount: '',
-          fellowStr: '',
         },
-        stationShow: false
+        fellowDepts: [], // 同行人userName
+        fellowDeptIds: [],
+        fellowCount: '',
+        fellowStr: '',
+        stationShow: false,
+        deptSelectShow: false,
+        errMsg: '', // 表单校验失败消息
       }
     },
     methods: {
@@ -138,13 +145,36 @@
         this.$http.get(`/ec/api/fees/count?deptId=${deptId}`).then((res) => {
           let feeRes = res.data;
           if (feeRes.errcode !== 0) {
-            this.balance = 0;
+            this.trip.balance = 0;
             return;
           }
-          this.balance = feeRes.data.balance || 0;
+          this.trip.balance = feeRes.data.balance || 0;
         }).catch(() => {
-          this.balance = 0;
+          this.trip.balance = 0;
         });
+      },
+
+      initTrip() {
+        this.trip = {
+          userId: this.trip.userId,
+          userName: this.trip.userName,
+          deptId: this.trip.deptId,
+          deptName: this.trip.deptName,
+          balance: 0,
+          reason: '',
+          itineraries: [],
+          remark: '', // 备注
+          fellowUserIds: [],
+          fellowUsers: [], // 同行人userId
+        };
+        this.fellowDepts = [];
+        this.fellowDeptIds = [];
+        this.fellowCount = '';
+        this.fellowStr = '';
+        this.itIndex = 0;
+
+        this.addItinerary();
+        this.getBalance()
       },
 
       selectTrans(it, tripwayName, tripwayType) {
@@ -156,6 +186,8 @@
         if (tripwayType === 4) {
           it.tripwayName = '';
         }
+        it.depCity = '';
+        it.arrCity = '';
         this.tripwayType = tripwayType;
       },
 
@@ -242,18 +274,18 @@
             startWithDepartmentId: 0, //仅支持0和-1
             onSuccess: function (result) {
               that.trip.fellowUsers = result.users;
-              that.trip.fellowCount = that.selectedCount;
               that.trip.fellowUserIds = [];
-              that.trip.fellowStr = '';
+              that.fellowCount = that.selectedCount;
+              that.fellowStr = '';
               let nameArray = []
               for(let user of result.users) {
                 that.trip.fellowUserIds.push(user.emplId);
                 nameArray.push(user.name);
               }
               if(result.users.length <= 3) {
-                that.trip.fellowStr = nameArray.join('、');
+                that.fellowStr = nameArray.join('、');
               } else {
-                that.trip.fellowStr =`${nameArray[0]}、${nameArray[1]}等${result.selectedCount}人`
+                that.fellowStr =`${nameArray[0]}、${nameArray[1]}等${result.selectedCount}人`
               }
             },
           });
@@ -274,19 +306,121 @@
         if(cityName) {
           this.trip.itineraries[this.itIndex][this.cityType] = cityName;
         }
+      },
+      showSelectDept() {
+        if (this.departments.length <= 1) {
+          return;
+        }
+        this.deptSelectShow = true;
+      },
+      selectDept(deptName, index) {
+        this.trip.deptId = this.departmentLists[index].deptId;
+        this.trip.deptName = deptName;
+        this.deptSelectShow = false;
+        this.getBalance(this.trip.deptId)
+      },
+      setErrMsg(msg) {
+        if(!this.errMsg) {
+          this.errMsg = msg;
+        }
+      },
+      validate() {
+        let valid = true;
+        let that = this;
+        this.errMsg = '';
+        if(!this.trip.userId) {
+          valid = false;
+          this.setErrMsg('无法获取当前用户信息')
+        }
+        if(!this.trip.deptId) {
+          valid = false;
+          this.setErrMsg('无法获取当前用户部门信息')
+        }
+        if(!this.trip.reason) {
+          valid = false;
+          this.setErrMsg('请输入出差事由')
+        }
+        if(this.trip.balance <= 0) {
+          valid = false;
+          this.setErrMsg('当前部门预算余额不足')
+        }
+        if(!valid) return false;
+
+        for(let it of this.trip.itineraries) {
+          if(!it.tripwayType) {
+            valid = false;
+            this.setErrMsg('无法获取交通工具信息')
+            break;
+          }
+          if(it.tripwayType === 4 && !it.tripwayName) {
+            valid = false;
+            this.setErrMsg('请填写交通工具名称')
+            break;
+          } 
+          
+          if(!it.depCity) {
+            valid = false;
+            this.setErrMsg('请选择出发城市')
+            break;
+          }
+          if(!it.arrCity) {
+            valid = false;
+            this.setErrMsg('请选择目的城市')
+            break;
+          }
+          if(!it.depDate) {
+            valid = false;
+            this.setErrMsg('请选择开始时间')
+            break;
+          }
+          if(!it.arrDate) {
+            valid = false;
+            this.setErrMsg('请选择结束时间')
+            break;
+          }
+        }
+        return valid;
+      },
+      commit() {
+        // 提交审批单
+        let that = this;
+        let valid = this.validate();
+        if(!valid) {
+          this.$toast(this.errMsg)
+          return 
+        }
+        
+        this.$http.post('/ec/api/trips', this.trip)
+        .then(res => {
+          let resData = res.data;
+          if(resData.errcode !== 0) {
+            that.$toast(resData.errmsg)
+            return;
+          }
+          that.$toast.success('出差申请成功');
+          that.initTrip();
+        })
+        .catch(() => {
+          that.$toast('出差申请失败')
+        });
       }
     },
     created() {
-      let user = JSON.parse(localStorage.getItem('user'));
-      this.user = user;
+      let user = JSON.parse(localStorage.getItem('user')) || {};
+      this.trip.userId = user.userId;
+      this.trip.userName = user.userName;
 
       let departments = user.departments || [];
-      this.deptName = departments[0].deptName;
-      for (let department of departments) {
-        this.departments.push(department.deptName)
+      if(departments.length) {
+        this.trip.deptId = departments[0].deptId;
+        this.trip.deptName = departments[0].deptName;
+        for (let department of departments) {
+          this.departments.push(department.deptName)
+        }
+        this.departmentLists = departments;
       }
-      this.departmentLists = departments;
 
+      this.getBalance(this.trip.deptId)
       this.addItinerary();
     }
   }
@@ -295,9 +429,15 @@
 <style scoped>
   #app {
     background-color: hsl(0, 0%, 98%);
-    padding: 10px 0px;
+    padding: 0px 0px;
     color: #000;
-    height: 100vh;
+    min-height: 100vh;
+    height: 100%;
+  }
+
+  .z-w {
+    padding: 0px;
+    margin: 0px;
   }
 
   .van-cell__value {

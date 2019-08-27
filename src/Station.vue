@@ -119,6 +119,9 @@
         this.$emit('closepage', this.cityName)
       },
       goBack () {
+        this.inSearch = false;
+        this.keywords = '';
+        this.searchCities = [];
         this.$emit('closepage', this.cityName)
         // console.log("点击了浏览器的返回按钮");
         history.pushState(null, null, document.URL);
