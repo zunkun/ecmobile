@@ -12,7 +12,7 @@
       </van-search>
     </div>
     <van-index-bar :index-list="indexList" v-if="!inSearch">
-      <van-index-anchor index="历史" class="p-label2">历史</van-index-anchor>
+      <van-index-anchor index="历史" class="p-label2">历史{{trafficTypeId}}</van-index-anchor>
       <div class="p-content">
         <van-row>
           <van-col span="6" v-for="(city, $cityIndex) in hiscities" :key="'city-' + $cityIndex">
@@ -57,7 +57,7 @@
 <script>
   export default {
     name: 'Station',
-    props: ['tripwayType'],
+    props: ['trafficTypeId'],
     data() {
       return {
         keywords: '',
@@ -79,7 +79,7 @@
           return;
         };
         this.inSearch = true;
-        this.$http.get(`/ec/api/area/search?type=${this.tripwayType}&keywords=${this.keywords}`).then(res => {
+        this.$http.get(`/ec/api/area/search?type=${this.trafficTypeId}&keywords=${this.keywords}`).then(res => {
           let resData = res.data;
           this.searchCities = [];
           if(resData.errcode !== 0) return;
@@ -90,7 +90,7 @@
       },
       getLists() {
         let that = this;
-        this.$http.get(`/ec/api/area/cities?type=${this.tripwayType}`).then(res => {
+        this.$http.get(`/ec/api/area/cities?type=${this.trafficTypeId}`).then(res => {
           let resData = res.data;
           if(resData.errcode !== 0) return;
           for(let key of Object.keys(resData.data)) {
@@ -98,6 +98,12 @@
           }
           this.cityLists = resData.data;
         });
+      },
+      initHis() {
+        this.hiscities = JSON.parse(localStorage.getItem(`hiscities${this.trafficTypeId}`) || "[]");
+        if(this.hiscities.length > 7) {
+          this.hiscities.splice(7);
+        }
       },
       addHis(name) {
         if(!this.hiscities) this.hiscities = [];
@@ -108,7 +114,7 @@
           this.hiscities.splice(7);
         }
         this.hiscities.unshift(name);
-        localStorage.setItem('hiscities', JSON.stringify(this.hiscities));
+        localStorage.setItem(`hiscities${this.trafficTypeId}`, JSON.stringify(this.hiscities));
       },
       pickCity (city) {
         this.inSearch = false;
@@ -123,18 +129,13 @@
         this.keywords = '';
         this.searchCities = [];
         this.$emit('closepage', this.cityName)
-        // console.log("点击了浏览器的返回按钮");
         history.pushState(null, null, document.URL);
       },
     },
     created() {
-      this.tripwayType = this.tripwayType || 1;
+      this.trafficTypeId = this.trafficTypeId || 0;
       this.getLists()
-
-      this.hiscities = JSON.parse(localStorage.getItem('hiscities')) || [];
-      if(this.hiscities.length > 7) {
-        this.hiscities.splice(7);
-      }
+      this.initHis()
     },
     mounted () {      
       if (window.history && window.history.pushState) {
@@ -146,6 +147,13 @@
     destroyed () {
       window.removeEventListener('popstate', this.goBack, false);
     },
+    watch: {      
+      trafficTypeId(newVal,oldVal) {
+        this.getLists();
+        this.initHis()
+        return newVal;
+      }
+    }
   }
 </script>
 

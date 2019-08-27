@@ -31,20 +31,20 @@
 
         <van-cell-group>
           <van-cell title="交通工具" class="trans">
-            <van-button v-for="(tripwayName, tripwayType) in transMap" :key="'tripwayType' + $index + '-' + tripwayType"
-              type="info" size="small" :plain="it.tripwayType !== Number(tripwayType)" :text="tripwayName"
-              @click="selectTrans(it, tripwayName, tripwayType)" />
+            <van-button v-for="(trafficTypeName, trafficTypeId) in trafficTypeMap" :key="'trafficTypeId' + $index + '-' + trafficTypeId"
+              type="info" size="small" :plain="it.trafficTypeId !== Number(trafficTypeId)" :text="trafficTypeName"
+              @click="selectTrafficType(it, trafficTypeName, trafficTypeId)" />
           </van-cell>
-          <van-field v-model="it.tripwayName" required placeholder="请填写交通工具名称（必填）" v-if="it.tripwayType === 4" />
+          <van-field v-model="it.trafficTypeName" required placeholder="请填写交通工具名称（必填）" v-if="it.trafficTypeId === 3" />
 
           <van-cell title="单程往返" class="trans">
-            <van-button v-for="(oneRound, $roundIndex) in ['单程', '往返']" :key="'oneRound' + $roundIndex" type="info"
-              size="small" :plain="it.oneRound !== oneRound" :text="oneRound" @click="selectOneRound(it, oneRound)" />
+            <van-button v-for="(tripwayName, $tripwayIndex) in ['单程', '往返']" :key="'tripway' + $index + '-' + $tripwayIndex" type="info"
+              size="small" :plain="it.tripwayId !== $tripwayIndex" :text="tripwayName" @click="selectTripway(it, $tripwayIndex)" />
           </van-cell>
-          <van-field v-model="it.depCity" label="出发城市" required placeholder="出发城市" v-if="tripwayType == 3 || tripwayType ==4" />
-          <van-field v-model="it.arrCity" label="目的城市" required placeholder="目的城市" v-if="tripwayType == 3 || tripwayType ==4" />
-          <van-cell title="出发城市" required is-link :value="it.depCity" @click="chooseCity($index, 'depCity')" v-if="tripwayType == 1 || tripwayType ==2" />
-          <van-cell title="目的城市" required is-link :value="it.arrCity"  @click="chooseCity($index, 'arrCity')" v-if="tripwayType == 1 || tripwayType ==2"/>
+          <van-field v-model="it.depCity" label="出发城市" required placeholder="出发城市" v-if="trafficTypeId == 2 || trafficTypeId ==3" />
+          <van-field v-model="it.arrCity" label="目的城市" required placeholder="目的城市" v-if="trafficTypeId == 2 || trafficTypeId ==3" />
+          <van-cell title="出发城市" required is-link :value="it.depCity" @click="chooseCity($index, 'depCity')" v-if="trafficTypeId == 0 || trafficTypeId ==1" />
+          <van-cell title="目的城市" required is-link :value="it.arrCity"  @click="chooseCity($index, 'arrCity')" v-if="trafficTypeId == 0 || trafficTypeId ==1"/>
 
           <van-cell title="开始时间" required is-link :value="it.depDateStr" @click="chooseDate(it, 'depDate', it.depDate)" />
           <van-cell title="结束时间" required is-link :value="it.arrDateStr" @click="chooseDate(it, 'arrDate', it.arrDate)" />
@@ -74,7 +74,7 @@
 
 
     <van-popup v-model="stationShow" position="right" :overlay="false" :duration="0" class="popup-z">
-      <Station :tripwayType="tripwayType" @closepage="closePage"/>
+      <Station :trafficTypeId="trafficTypeId" @closepage="closePage"/>
     </van-popup>
 
     <van-popup v-model="deptSelectShow" position="bottom">
@@ -94,23 +94,24 @@
       return {
         departments: [],
         departmentLists: [],
-        transMap: {
-          1: '飞机',
-          2: '火车',
-          3: '汽车',
-          4: '其他'
+        trafficTypeMap: {
+          0: '飞机',
+          1: '火车',
+          2: '汽车',
+          3: '其他'
         },
-        oneRoundType: {
-          1: '单程',
-          2: '往返'
+        tripwayMap: {
+          0: '单程',
+          1: '往返'
         },
-        tripwayType: 1,
+        trafficTypeId: 0,
         cityType: '',
         itIndex: 0,
         defaultIt: {
-          tripwayType: 1,
-          tripwayName: '飞机',
-          oneRound: '单程',
+          trafficTypeId: 0,
+          trafficTypeName: '飞机',
+          tripwayId: 0,
+          tripwayName: '单程',
           depCity: '',
           arrCity: '',
           depDate: '',
@@ -142,6 +143,8 @@
     },
     methods: {
       getBalance(deptId) {
+        this.trip.balance = 1300;
+        return;
         this.$http.get(`/ec/api/fees/count?deptId=${deptId}`).then((res) => {
           let feeRes = res.data;
           if (feeRes.errcode !== 0) {
@@ -177,22 +180,23 @@
         this.getBalance()
       },
 
-      selectTrans(it, tripwayName, tripwayType) {
-        tripwayType = Number(tripwayType);
-        if (it.tripwayType === tripwayType) return;
+      selectTrafficType(it, trafficTypeName, trafficTypeId) {
+        trafficTypeId = Number(trafficTypeId);
+        if (it.trafficTypeId === trafficTypeId) return;
 
-        it.tripwayType = tripwayType;
-        it.tripwayName = tripwayName;
-        if (tripwayType === 4) {
-          it.tripwayName = '';
+        it.trafficTypeId = trafficTypeId;
+        it.trafficTypeName = trafficTypeName;
+        if (trafficTypeId === 3) {
+          it.trafficTypeName = '';
         }
         it.depCity = '';
         it.arrCity = '';
-        this.tripwayType = tripwayType;
+        this.trafficTypeId = trafficTypeId;
       },
 
-      selectOneRound(it, oneRound) {
-        it.oneRound = oneRound;
+      selectTripway(it, tripwayId) {
+        it.tripwayId = tripwayId;
+        it.tripwayName = this.tripwayMap[tripwayId];
       },
 
       isSameDay(timeStampA, timeStampB) {
@@ -293,7 +297,7 @@
       },
 
       chooseCity(itIndex, cityType) {
-        if(this.tripwayType !== 1 && this.tripwayType !== 2) {
+        if(this.trafficTypeId !== 0 && this.trafficTypeId !== 1) {
           this.stationShow = false;
           return;
         }
@@ -326,7 +330,6 @@
       },
       validate() {
         let valid = true;
-        let that = this;
         this.errMsg = '';
         if(!this.trip.userId) {
           valid = false;
@@ -347,12 +350,12 @@
         if(!valid) return false;
 
         for(let it of this.trip.itineraries) {
-          if(!it.tripwayType) {
+          if(it.trafficTypeId !== 0 && !it.trafficTypeId) {
             valid = false;
             this.setErrMsg('无法获取交通工具信息')
             break;
           }
-          if(it.tripwayType === 4 && !it.tripwayName) {
+          if(it.trafficTypeId === 3 && !it.trafficTypeName) {
             valid = false;
             this.setErrMsg('请填写交通工具名称')
             break;
