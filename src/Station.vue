@@ -12,7 +12,7 @@
       </van-search>
     </div>
     <van-index-bar :index-list="indexList" v-if="!inSearch">
-      <van-index-anchor index="历史" class="p-label2">历史{{trafficTypeId}}</van-index-anchor>
+      <van-index-anchor index="历史" class="p-label2">历史</van-index-anchor>
       <div class="p-content">
         <van-row>
           <van-col span="6" v-for="(city, $cityIndex) in hiscities" :key="'city-' + $cityIndex">
@@ -64,7 +64,7 @@
         cityName: '',
         inSearch: false,  // 是否在搜索状态
         indexList: ['历史', '热门'],
-        hotcities: ['郑州','重庆', '天津', '西安', '广州', '深圳', '上海', '成都', '厦门', '杭州', '长沙', '南京', '武汉', '昆明', '大连', '北京'],
+        hotcities: ['郑州','重庆', '天津', '西安', '广州', '深圳', '成都', '厦门', '长沙', '武汉', '昆明', '大连', '杭州','南京', '北京', '上海'],
         hiscities: [],
         cityLists: {},
         searchCities: [],

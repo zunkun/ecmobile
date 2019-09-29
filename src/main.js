@@ -76,7 +76,8 @@ if (!localToken || expire < Date.now()) {
             }
           }).catch(() => {})
       },
-      onFail: function () {
+      onFail: function (error) {
+        alert(JSON.stringify(error))
         alert('获取用户信息失败')
       }
     });
