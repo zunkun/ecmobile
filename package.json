@@ -10,7 +10,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "dingtalk-jsapi": "^2.6.26",
-    "vant": "^2.1.4",
+    "vant": "^2.1.8",
     "vue": "^2.6.6"
   },
   "devDependencies": {
