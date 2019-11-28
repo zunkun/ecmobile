@@ -3,7 +3,10 @@ import App from './App.vue'
 import axios from 'axios'
 import global from './global'
 import * as dd from 'dingtalk-jsapi'
-import 'vant/lib/index.css';
+import router from './router'
+import VueRouter from 'vue-router'
+import 'vant/lib/index.css'
+import 'vant/lib/icon/local.css';
 
 import {
   Row,
@@ -21,7 +24,15 @@ import {
   IndexAnchor,
   Picker,
   Dialog,
-  Toast
+  Toast,
+  Tabbar, 
+  TabbarItem,
+  Tab, 
+  Tabs,
+  Image,
+  List,
+  Step, 
+  Steps
 } from 'vant';
 Vue.use(Popup);
 Vue.use(Loading);
@@ -39,20 +50,38 @@ Vue.use(IndexAnchor);
 Vue.use(Picker)
 Vue.use(Dialog);
 Vue.use(Toast);
-
+Vue.use(Tabbar);
+Vue.use(TabbarItem);
+Vue.use(Tab);
+Vue.use(Tabs);
+Vue.use(Image);
+Vue.use(List);
+Vue.use(Step);
+Vue.use(Steps);
 
 Vue.config.productionTip = false;
 Vue.prototype.GLOBAL = global;
 Vue.prototype.$http = axios;
 Vue.prototype.$dd = dd;
-
-
-new Vue({
-  render: h => h(App)
-}).$mount('#app');
+Vue.use(VueRouter)
 
 let localToken = localStorage.getItem('token');
 let expire = Number(localStorage.getItem('expire')) || 0;
+
+if(process.env.NODE_ENV === 'development') {
+  axios.get(`/ec/api/auth/login?userId=150091`)
+  .then(async res => {
+    let resData = res.data;
+    if (resData.errcode === 0) {
+      let user = resData.data.user;
+      let token = resData.data.token;
+
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
+      localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
+    }
+  }).catch(() => {})
+}
 
 // 登录
 if (!localToken || expire < Date.now()) {
@@ -76,29 +105,9 @@ if (!localToken || expire < Date.now()) {
             }
           }).catch(() => {})
       },
-      onFail: function (error) {
-        alert(JSON.stringify(error))
-        alert('获取用户信息失败')
-      }
+      onFail: function () {}
     });
   });
-
-  if(process.env.NODE_ENV === 'development' && !localStorage.getItem('token')) {
-    axios.get(`/ec/api/auth/login?userId=4508346521365159`)
-    .then(async res => {
-      let resData = res.data;
-      if (resData.errcode === 0) {
-        let user = resData.data.user;
-        let token = resData.data.token;
-
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
-        localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
-
-        window.location.reload();
-      }
-    }).catch(() => {})
-  }
 } else {
   axios.interceptors.request.use(config => {
     config.headers.Authorization = localStorage.getItem('token');
@@ -107,6 +116,11 @@ if (!localToken || expire < Date.now()) {
     return Promise.reject(err);
   });
 }
+
+new Vue({
+  router,
+  render: h => h(App)
+}).$mount('#app')
 
 // 签名
 dd.ready(() => {
@@ -131,4 +145,3 @@ dd.ready(() => {
     });
   })
 });
-
