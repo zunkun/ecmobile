@@ -32,7 +32,9 @@ import {
   Image,
   List,
   Step, 
-  Steps
+  Steps,
+  Collapse,
+  CollapseItem
 } from 'vant';
 Vue.use(Popup);
 Vue.use(Loading);
@@ -58,6 +60,8 @@ Vue.use(Image);
 Vue.use(List);
 Vue.use(Step);
 Vue.use(Steps);
+Vue.use(Collapse);
+Vue.use(CollapseItem)
 
 Vue.config.productionTip = false;
 Vue.prototype.GLOBAL = global;
@@ -68,54 +72,78 @@ Vue.use(VueRouter)
 let localToken = localStorage.getItem('token');
 let expire = Number(localStorage.getItem('expire')) || 0;
 
-if(process.env.NODE_ENV === 'development') {
-  axios.get(`/ec/api/auth/login?userId=150091`)
-  .then(async res => {
-    let resData = res.data;
-    if (resData.errcode === 0) {
-      let user = resData.data.user;
-      let token = resData.data.token;
-
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
-    }
-  }).catch(() => {})
-}
-
-// 登录
-if (!localToken || expire < Date.now()) {
-  // dd.ready参数为回调函数，在环境准备就绪时触发，jsapi的调用需要保证在该回调函数触发后调用，否则无效。
-  dd.ready(() => {
-    dd.runtime.permission.requestAuthCode({
-      corpId: global[process.env.NODE_ENV].corpId || 'dingcbcbb63d3edd5478',
-      onSuccess: function (result) {
-        axios.get(`/ec/api/auth/login?corpId=${global.corpId}&code=${result.code}`)
-          .then(async res => {
-            let resData = res.data;
-            if (resData.errcode === 0) {
-              let user = resData.data.user;
-              let token = resData.data.token;
-  
-              localStorage.setItem('user', JSON.stringify(user));
-              localStorage.setItem('token', token);
-              localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
-  
-              window.location.reload();
-            }
-          }).catch(() => {})
-      },
-      onFail: function () {}
-    });
-  });
-} else {
-  axios.interceptors.request.use(config => {
+if(localToken) {
+    axios.interceptors.request.use(config => {
     config.headers.Authorization = localStorage.getItem('token');
     return config;
   }, err => {
     return Promise.reject(err);
   });
 }
+
+axios.get(`/ecapi/api/auth/login?userId=4508346521365159`)
+.then(async res => {
+  let resData = res.data;
+  if (resData.errcode === 0) {
+    let user = resData.data.user;
+    let rule =resData.data.rule;
+    let token = resData.data.token;
+
+    if(localToken) {
+      let localUser = JSON.parse(localStorage.getItem('user'))
+      if(user.userId === localUser.userId) {
+        return;
+      }
+    }
+
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('rule', JSON.stringify(rule));
+    localStorage.setItem('token', token);
+    localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
+
+    axios.interceptors.request.use(config => {
+      config.headers.Authorization = localStorage.getItem('token');
+      return config;
+    }, err => {
+      return Promise.reject(err);
+    });
+  }
+}).catch(() => {})
+
+// alert(localToken)
+// 登录
+let corpId = 'ding9f71dd70c3adb557'
+dd.ready(() => {
+  dd.runtime.permission.requestAuthCode({
+    corpId,
+    onSuccess: function (result) {
+      axios.get(`/ecapi/api/auth/login?corpId=${corpId}&code=${result.code}`)
+        .then(async res => {
+          let resData = res.data;
+          if (resData.errcode === 0) {
+            let user = resData.data.user;
+            let token = resData.data.token;
+            let rule = resData.data.rule;
+
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('rule', JSON.stringify(rule));
+            localStorage.setItem('token', token);
+            localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
+
+            axios.interceptors.request.use(config => {
+              config.headers.Authorization = token;
+              return config;
+            }, err => {
+              return Promise.reject(err);
+            });
+          }
+        }).catch(() => {})
+    },
+    onFail: function (error) {
+      alert(JSON.stringify(error))
+    }
+  });
+});
 
 new Vue({
   router,
@@ -124,7 +152,7 @@ new Vue({
 
 // 签名
 dd.ready(() => {
-  axios.get('/ec/api/auth/signature?platform=ecmobile&url=' + window.location.href.split("#")[0]).then(res => {
+  axios.get('/ecapi/api/auth/signature?platform=ecmobile&url=' + window.location.href.split("#")[0]).then(res => {
     let resData = res.data;
     if (resData.errcode !== 0) return;
     let sig = resData.data;

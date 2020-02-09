@@ -79,7 +79,7 @@
           return;
         };
         this.inSearch = true;
-        this.$http.get(`/ec/api/area/search?type=${this.trafficTypeId}&keywords=${this.keywords}`).then(res => {
+        this.$http.get(`/ecapi/api/area/search?type=${this.trafficTypeId}&keywords=${this.keywords}`).then(res => {
           let resData = res.data;
           this.searchCities = [];
           if(resData.errcode !== 0) return;
@@ -90,7 +90,7 @@
       },
       getLists() {
         let that = this;
-        this.$http.get(`/ec/api/area/cities?type=${this.trafficTypeId}`).then(res => {
+        this.$http.get(`/ecapi/api/area/cities?type=${this.trafficTypeId}`).then(res => {
           let resData = res.data;
           if(resData.errcode !== 0) return;
           for(let key of Object.keys(resData.data)) {

@@ -8,14 +8,13 @@
               <div v-for="(approval, $index) in todos" :key="'todo-' + $index" class="a-card" @click="goto(approval.trip.id)">
                 <van-row>
                   <van-col span="4">
-                    <van-image round width="48" height="48" :alt="approval.trip.userName" fit="cover"
-                      :src="approval.trip.avatar">
-                      <template v-slot:error>{{approval.trip.userName}}</template>
+                    <van-image round width="48" height="48" :alt="approval.trip.userName" fit="cover" :src="approval.trip.avatar">
+                      <template v-slot:error class="errmsg">{{parseName(approval.trip.userName)}}</template>
                     </van-image>
                   </van-col>
                   <van-col span="12">
                     <div class="a-title">
-                      {{approval.trip.reason}} {{$index +1}}
+                      {{approval.trip.cause}} {{$index +1}}
                     </div>
                     <div class="a-desc">
                       {{approval.trip.userName}} 提交的出差申请
@@ -23,7 +22,7 @@
                   </van-col>
                   <van-col span="8">
                     <div class="a-status">
-                      {{statusMap[approval.approval.status]}}
+                      {{statusMap[approval.trip.status]}}
                     </div>
                     <div class="a-time">
                       {{parseDateStr(approval.trip.createdAt)}}
@@ -45,14 +44,13 @@
               <div v-for="(approval, $index) in dones" :key="'done-' + $index" class="a-card" @click="goto(approval.trip.id)">
                 <van-row>
                   <van-col span="4">
-                    <van-image round width="48" height="48" :alt="approval.trip.userName" fit="cover"
-                      :src="approval.trip.avatar">
-                      <template v-slot:error>{{approval.trip.userName}}</template>
+                    <van-image round width="48" height="48" :alt="approval.trip.userName" fit="cover" :src="approval.trip.avatar">
+                      <template v-slot:error class="errmsg">{{parseName(approval.trip.userName)}}</template>
                     </van-image>
                   </van-col>
                   <van-col span="12">
                     <div class="a-title">
-                      {{approval.trip.reason}}
+                      {{approval.trip.cause}}
                     </div>
                     <div class="a-desc">
                       {{approval.trip.userName}} 提交的出差申请
@@ -60,7 +58,7 @@
                   </van-col>
                   <van-col span="8">
                     <div class="a-status">
-                      {{statusMap[approval.approval.status]}}
+                      {{statusMap[approval.trip.status]}}
                     </div>
                     <div class="a-time">
                       {{parseDateStr(approval.trip.createdAt)}}
@@ -85,10 +83,11 @@
       return {
         active: 'todo',
         statusMap: {
-          1: '审批中',
-          2: '已通过',
-          3: '已拒绝',
-          4: '已撤回',
+          10: '审批中',
+          11: '修改审批中',
+          20: '已通过',
+          30: '已拒绝',
+          40: '已撤销',
         },
         type: 'todo',
         todos: [],
@@ -116,7 +115,7 @@
       }
     },
     methods: {
-      setType(name, title) {
+      setType(name) {
         this.type = name;
         if (!this.query[this.type].count) {
           this.query[this.type] = {
@@ -135,7 +134,7 @@
       },
       getApprovals() {
         let that = this;
-        this.$http.get(`/ec/api/approvals?type=${this.type}&page=${ this.query[this.type].page}&limit=10`)
+        this.$http.get(`/ecapi/api/approvals?type=${this.type}&page=${ this.query[this.type].page}&limit=10`)
           .then(res => {
             if(that.type === 'todo') that.todoLoaded = true;
             if(that.type === 'done') that.doneLoaded = true;
@@ -166,10 +165,17 @@
         date = new Date(date);
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
-        let day = date.getDay();
+        let day = date.getDate();
         let monthStr = month >= 10 ? month : `0${month}`;
         let dayStr = day >= 10 ? day : `0${day}`;
         return `${year}-${monthStr}-${dayStr}`;
+      },
+
+      parseName(name) {
+        if(name.length > 2) {
+          name = name.slice(name.length -2)
+        }
+        return name;
       },
 
       goto(tripId) {
@@ -234,5 +240,10 @@
     text-align: center;
     padding: 40px;
     font-size: 1.2rem;
+  }
+  .van-image__error {
+    background: #5e97f6 !important;
+    color:inherit;
+    font-size: 1rem;
   }
 </style>

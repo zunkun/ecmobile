@@ -4,14 +4,13 @@
       <div slot="header" hidden></div>
       <van-cell-group>
         <van-cell title="姓名" :value="trip.userName" />
-        <van-cell title="部门"  :value="rule.deptName" />
+        <van-cell title="部门"  :value="trip.deptName" />
         <van-cell title="预算余额(元)" :value="trip.balance" />
-        <van-field v-model="trip.cause" label="出差事由" required placeholder="请输入出差事由" v-if="trip.balance > 0"/>
-        <p class="desc" v-if="trip.balance <= 0">{{trip.deptName}}部门预算不足，不能提交出差</p>
+        <van-field v-model="trip.cause" label="出差事由" required placeholder="请输入出差事由"/>
       </van-cell-group>
     </van-panel>
 
-    <div v-if="trip.balance > 0" class="z-w">
+    <div class="z-w">
       <van-panel class="task-panel" v-for="(it, $index) in trip.itineraries" :key="'it-' + $index">
         <div slot="header" class="trip-head">
           <van-row>
@@ -124,7 +123,7 @@
           userName: '',
           deptId: '',
           deptName: '',
-          balance: 1,
+          balance: '',
           cause: '',
           itineraries: [],
           remark: '', // 备注
@@ -138,50 +137,10 @@
         stationShow: false,
         deptSelectShow: false,
         errMsg: '', // 表单校验失败消息
-        user: {},
-        rule: {}
       }
     },
     
     methods: {
-      getBalance(deptId) {
-        this.$http.get(`/ecapi/api/fees/count?deptId=${deptId}`, {
-          headers: {Authorization: localStorage.getItem('token')}
-        }).then((res) => {
-          let feeRes = res.data;
-          if (feeRes.errcode !== 0) {
-            this.trip.balance = 0;
-            return;
-          }
-          this.trip.balance = feeRes.data.balance || 0;
-        }).catch(() => {
-          this.trip.balance = 0;
-        });
-      },
-
-      initTrip() {
-        this.trip = {
-          userId: this.trip.userId,
-          userName: this.trip.userName,
-          deptId: this.trip.deptId,
-          deptName: this.trip.deptName,
-          balance: 0,
-          cause: '',
-          itineraries: [],
-          remark: '', // 备注
-          fellowUserIds: [],
-          fellowUsers: [], // 同行人userId
-        };
-        this.fellowDepts = [];
-        this.fellowDeptIds = [];
-        this.fellowCount = '';
-        this.fellowStr = '';
-        this.itIndex = 0;
-
-        this.addItinerary();
-        this.getBalance()
-      },
-
       selectTrafficType(it, trafficTypeName, trafficTypeId) {
         trafficTypeId = Number(trafficTypeId);
         if (it.trafficTypeId === trafficTypeId) return;
@@ -395,40 +354,46 @@
           return 
         }
         
-        this.$http.post('/ecapi/api/trips', this.trip)
+        this.$http.post('/ecapi/api/trips/edit', this.trip)
         .then(res => {
           let resData = res.data;
           if(resData.errcode !== 0) {
             that.$toast(resData.errmsg)
             return;
           }
-          that.$toast.success('出差申请成功');
-          that.$router.push({name: 'tripdetail', params: {tripId: resData.data.id}});
+          that.$toast.success('提交成功');
+          that.$route.push({name: 'tripdetail', params: {tripId: that.tripId}})
         })
         .catch(() => {
-          // that.$toast('出差申请失败')
+          // that.$toast(失败')
         });
+      },
+      getTrip() {
+        let that = this;
+        this.$http.get(`/ecapi/api/trips/${this.tripId}`).then(res => {
+          let resData = res.data;
+          if(resData.errcode === 0) {
+            that.trip = resData.data;
+            that.setFellowStr();
+          }
+        })
+      },
+      setFellowStr() {
+        this.fellowStr = '';
+        let nameArray = []
+        for(let user of this.trip.fellowUsers) {
+          nameArray.push(user.name);
+        }
+        if(this.trip.fellowUsers.length <= 3) {
+          this.fellowStr = nameArray.join('、');
+        } else {
+          this.fellowStr =`${nameArray[0]}、${nameArray[1]}等${this.trip.fellowUsers.length}人`
+        }
       }
     },
     created() {
-      let user = JSON.parse(localStorage.getItem('user')) || {};
-      this.rule = JSON.parse(localStorage.getItem('rule')) || {};
-
-      this.trip.userId = user.userId;
-      this.trip.userName = user.userName;
-      this.trip.deptId = this.rule.deptId;
-      this.trip.deptName = this.rule.deptName;
-
-      let departments = user.departments || [];
-      if(departments.length) {
-        for (let department of departments) {
-          this.departments.push(department.deptName)
-        }
-        this.departmentLists = departments;
-      }
-
-      this.getBalance(this.trip.deptId)
-      this.addItinerary();
+      this.tripId = this.$route.params.tripId;
+      this.getTrip()
     }
   }
 </script>
@@ -448,9 +413,9 @@
     padding-bottom: 10px;
   }
 
-  /* .task-panel {
+  .task-panel {
     margin-top: 10px;
-  } */
+  }
 
   .trans .van-cell__title {
     flex: none;

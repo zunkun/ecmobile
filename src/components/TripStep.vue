@@ -1,10 +1,7 @@
 <template>
   <div>
     <van-panel class="basic">
-      <van-row>
-        审批流程
-      </van-row>
-      <van-steps direction="vertical" :active="step" :active-color="activeColor">
+      <van-steps direction="vertical" :active="step" :active-color="activeColor" >
         <van-step v-for="(step, $index) in steps" :key="'step' + $index">
           <van-row>
             <van-col span="10">{{step.title}}</van-col>
@@ -14,7 +11,7 @@
           <van-row>
             <van-col span="24">
               {{step.userName}}
-              <span v-if="step.status">({{step.status}})</span>
+              <span v-if="step.status">({{step.statusStr || statusMap[step.status]}})</span>
             </van-col>
           </van-row>
           <van-row>
@@ -30,14 +27,32 @@
 
 <script>
 export default {
-  name: 'tripstep',
-  props: ['steps', 'step', 'tripColor', 'activeColor'],
+  props: ['steps', 'step', 'tripColor', 'catalog'],
+  data() {
+    return {
+      activeColor: '#ccc',
+      statusMap: {
+        10: '审批中',
+        11: '修改审批中',
+        20: '已通过',
+        30: '已拒绝',
+        40: '已撤销',
+      },
+      colorMap: {
+          10: '#38f',
+          11: '#38f',
+          20: '#07c160',
+          30: 'red',
+          40: '#ccc'
+        },
+    }
+  },
   methods: {
     parseDateStr(date, type = 1) {
         date = new Date(date);
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
-        let day = date.getDay();
+        let day = date.getDate();
         let monthStr = month >= 10 ? month : `0${month}`;
         let dayStr = day >= 10 ? day : `0${day}`;
         let str = `${year}-${monthStr}-${dayStr}`;
@@ -54,7 +69,17 @@ export default {
       },
   },
   created() {
-    
+    if(this.steps) {
+      this.activeColor = this.colorMap[this.steps[this.step].status]
+    } else {
+      this.activeColor = '#ccc'
+    }
+  },
+  watch: {
+    step() {
+      this.activeColor = this.colorMap[this.steps[this.step].status]
+      
+    } 
   }
 }
 </script>

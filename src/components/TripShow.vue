@@ -11,8 +11,8 @@
           <div class="a-title">
             {{trip.userName}}
           </div>
-          <div class="a-desc" :style="{color: colorMap[approval.status]}">
-            {{statusMap[approval.status]}}
+          <div class="a-desc" :style="{color: colorMap[trip.status]}">
+            {{statusMap[trip.status]}}
           </div>
         </van-col>
       </van-row>
@@ -22,7 +22,7 @@
             审批编号
           </van-col>
           <van-col span="18" class="basic1-text">
-            {{approval.id}}
+            {{trip.id}}
           </van-col>
         </van-row>
         <van-row class="basic1-item">
@@ -144,26 +144,28 @@
 
 <script>
   export default {
-    props: ['trip', 'approval'], 
+    props: ['trip'], 
     data() {
       return {
         statusMap: {
-          1: '审批中',
-          2: '已通过',
-          3: '已拒绝',
-          4: '已撤回',
+          10: '审批中',
+          11: '审批中',
+          20: '已通过',
+          30: '已拒绝',
+          40: '已撤销',
         },
         colorMap: {
-          1: '#38f',
-          2: '#07c160',
-          3: 'red',
-          4: '#ccc'
+          10: '#38f',
+          11: '#38f',
+          20: '#07c160',
+          30: 'red',
+          40: '#ccc'
         },
         tripId: '',
         authority: false,
         remark: '',
         steps: [],
-        activeColor: '#38f',
+        activeColor: '#ccc',
         imgName: '',
       }
     },
@@ -172,7 +174,7 @@
         date = new Date(date);
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
-        let day = date.getDay();
+        let day = date.getDate();
         let monthStr = month >= 10 ? month : `0${month}`;
         let dayStr = day >= 10 ? day : `0${day}`;
         let str = `${year}-${monthStr}-${dayStr}`;
@@ -255,7 +257,8 @@
     padding-left: 5px;
   }
   .van-image__error {
-    background: #ffd01eab;
+    background: #5e97f6 !important;
     color:inherit;
+    font-size: 1rem;
   }
 </style>

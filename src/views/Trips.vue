@@ -7,12 +7,12 @@
             <van-row>
               <van-col span="12">
                 <div class="a-title">
-                  {{approval.trip.reason}} {{$index +1}}
+                  {{approval.trip.cause}}
                 </div>
               </van-col>
               <van-col span="12">
-                <div class="a-status" :style="{color: colorMap[approval.approval.status]}">
-                  {{statusMap[approval.approval.status]}}
+                <div class="a-status" :style="{color: colorMap[approval.trip.status]}">
+                  {{statusMap[approval.trip.status]}}
                 </div>
                 <div class="a-time">
                   {{parseDateStr(approval.trip.createdAt)}}
@@ -22,9 +22,9 @@
           </div>
         </van-list>
       </div>
-      <!-- <div class="no-data" v-else>
-        没有审批单
-      </div> -->
+      <div class="no-data" v-else>
+        没有出差申请
+      </div>
     </van-panel>
   </div>
 </template>
@@ -34,16 +34,18 @@
     data() {
       return {
         statusMap: {
-          1: '审批中',
-          2: '已通过',
-          3: '已拒绝',
-          4: '已撤回',
+          10: '审批中',
+          11: '审批中',
+          20: '已通过',
+          30: '已拒绝',
+          40: '已撤销',
         },
         colorMap: {
-          1: '#38f',
-          2: '#07c160',
-          3: 'red',
-          4: '#ccc'
+          10: '#38f',
+          11: '#38f',
+          20: '#07c160',
+          30: 'red',
+          40: '#ccc'
         },
         trips: [],
         loaded: false,
@@ -60,7 +62,7 @@
       },
       getTrips() {
         let that = this;
-        this.$http.get(`/ec/api/approvals/trips?page=${ this.page}&limit=10`)
+        this.$http.get(`/ecapi/api/approvals/trips?page=${ this.page}&limit=10`)
           .then(res => {
             that.loaded = true;
             let resData = res.data;
@@ -79,7 +81,7 @@
         date = new Date(date);
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
-        let day = date.getDay();
+        let day = date.getDate();
         let monthStr = month >= 10 ? month : `0${month}`;
         let dayStr = day >= 10 ? day : `0${day}`;
         // let hours = date.getHours();

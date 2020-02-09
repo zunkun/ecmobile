@@ -53,6 +53,15 @@ const router =  new Router({
         isAuth: true,
       }
     },
+    {
+      path: '/tripedit/:tripId',
+      name: 'tripedit',
+      component: () => import('./views/TripEdit.vue'),
+      meta: {
+        title: '出差申请',
+        isAuth: true,
+      }
+    },
   ]
 })
 
@@ -67,16 +76,17 @@ router.beforeEach(async (to, from, next) => {
     let token = localStorage.getItem('token');
     if(!token || expire < Date.now()) {
       if(to.query.userId) {
-        let res = await axios.get(`/ec/api/auth/login?userId=${to.query.userId}`)
+        let res = await axios.get(`/ecapi/api/auth/login?userId=${to.query.userId}`)
         let resData = res.data;
         if (resData.errcode === 0) {
           let user = resData.data.user;
           let token = resData.data.token;
-  
+          let rule = resData.data.rule;
+ 
           localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('rule', JSON.stringify(rule));
           localStorage.setItem('token', token);
           localStorage.setItem('expire', Date.now() + 24 * 60 * 60 * 1000)
-          window.location.reload()
         }
       }
     }
